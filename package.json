@@ -1,0 +1,14 @@
+{
+  "name": "kmm-wallpaper",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Living pixel-art desktop wallpaper: a Karelian forest cabin with your family",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

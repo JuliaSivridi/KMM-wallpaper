@@ -1,0 +1,24 @@
+[
+  {
+    "id": "human",
+    "name": "Ihme",
+    "age": "adult",
+    "height": 0,
+    "skin": "#f0c4a0",
+    "hair": "#7b3f1e",
+    "hairstyle": "short",
+    "outfit": "top-bottom",
+    "dressColor": "#1c1c22",
+    "topColor": "#d9772a",
+    "bottomColor": "#4a4d55",
+    "bottomKind": "pants",
+    "sleeves": "long",
+    "shoes": "#1c1c22",
+    "hat": "plain",
+    "hatColor": "#c0392b",
+    "wakeAt": 7,
+    "sleepAt": 23,
+    "temper": "calm",
+    "follows": null
+  }
+]

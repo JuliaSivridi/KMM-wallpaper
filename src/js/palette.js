@@ -1,0 +1,9 @@
+const CROWN = { winter: ['#24473a', '#2f5848'], spring: ['#2f6043', '#43794f'], summer: ['#2a5a3c', '#3c7350'], autumn: ['#2c5a3e', '#3e7150'], late: ['#2a5039', '#38654a'] };
+const PAL = {
+  winter: { ground: '#e6edf4', shade: '#cfdae6', grassA: '#9a8c70', grassB: '#7d715a', leaves: null, hillFar: '#9db0c8', hillNear: '#7f93ad', pineB: '#355a52', pineBHi: '#42695f', pineF: '#1f4237', pineFHi: '#2b5446', snow: true, flowers: null, frozen: true, path: '#c3ccd6' },
+  spring: { ground: '#6aa443', shade: '#5b933a', grassA: '#86c255', grassB: '#5e9c3c', leaves: ['#b5df6a', '#93c94f'], hillFar: '#7d97b5', hillNear: '#5d7d86', pineB: '#2f5d4e', pineBHi: '#3b6d5b', pineF: '#1c4433', pineFHi: '#285a43', snow: false, flowers: ['#f4f1e8', '#8fb3ff', '#ffe066'], frozen: false, path: '#8a6d4a' },
+  summer: { ground: '#4f8d36', shade: '#437d2f', grassA: '#64a540', grassB: '#3d7a2b', leaves: ['#4e9a3a', '#3c8030', '#62ad45'], hillFar: '#7892b2', hillNear: '#557a7a', pineB: '#2f5d4e', pineBHi: '#3b6d5b', pineF: '#1c4433', pineFHi: '#285a43', snow: false, flowers: ['#ffffff', '#ffd84a', '#e86fa0', '#b48cff'], frozen: false, path: '#8a6d4a' },
+  autumn: { ground: '#7d7a3c', shade: '#6c6833', grassA: '#a28f45', grassB: '#7c6d35', leaves: ['#e6a82a', '#cf7a1f', '#efcb4a', '#b84f1d'], hillFar: '#8090a8', hillNear: '#5f6f72', pineB: '#2f5a4c', pineBHi: '#3a6858', pineF: '#1c4231', pineFHi: '#275640', snow: false, flowers: null, frozen: false, path: '#7d6243' },
+  late:   { ground: '#6a6a45', shade: '#5c5c3d', grassA: '#857a4f', grassB: '#6b6240', leaves: null, hillFar: '#7f8ca0', hillNear: '#5d6a6e', pineB: '#2f5a4c', pineBHi: '#3a6858', pineF: '#1c4231', pineFHi: '#275640', snow: false, flowers: null, frozen: false, path: '#6e5a42' },
+};
+const SKY = { nTop: '#0b1026', nHor: '#1f2a4d', dTop: '#3f7fd0', dHor: '#a9d3f0', dTopW: '#6d9bd6', dHorW: '#d3e4f2', tTop: '#5a4a8a', tHor: '#f08a4b' };

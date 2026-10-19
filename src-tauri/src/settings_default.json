@@ -1,0 +1,10 @@
+{
+  "location": { "lat": 61.07, "lon": 28.28 },
+  "time": "now",
+  "weather": "now",
+  "season": "now",
+  "holidays": "all",
+  "actions": "all",
+  "animals": { "rate": "slow", "species": "all" },
+  "birds": { "rate": "slow", "species": "all" }
+}

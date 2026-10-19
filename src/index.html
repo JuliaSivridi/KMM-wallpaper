@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karjalan metsämökki</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/look.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div class="row"><span class="lbl" title="Time of day">🕒</span><button class="ic on" id="hr-now" title="Time — same as the clock">🔄</button><input type="range" id="hr" min="0" max="23.75" step="0.25"><span id="hl">--:--</span></div>
+  <div class="row"><span class="lbl" title="Weather">🌡️</span><span id="wx">Weather: loading…</span></div>
+  <div class="row"><span class="lbl" title="Weather forecast">🔮</span>
+    <button class="ic on" data-fc="0" title="Now">🔄</button><button class="ic" data-fc="1" title="In 1 hour">+1</button><button class="ic" data-fc="2" title="In 2 hours">+2</button><button class="ic" data-fc="3" title="In 3 hours">+3</button>
+  </div>
+  <div class="sep"></div>
+  <div class="row"><span class="lbl" title="Choose weather">🌦️</span>
+    <button class="ic on" data-w="auto" title="As it really is">🔄</button><button class="ic" data-w="clear" title="Clear">☀️</button><button class="ic" data-w="storm" title="Thunderstorm">⚡</button><button class="ic" data-w="rain" title="Rain">💧</button><button class="ic" data-w="snow" title="Snow">❄️</button><button class="ic" data-w="fog" title="Fog">🌫️</button>
+  </div>
+  <div class="row"><span class="lbl" title="Season">📅</span>
+    <button class="ic on" data-m="now" title="Now">🔄</button><button class="ic" data-m="0" title="Winter">⛄</button><button class="ic" data-m="4" title="Spring">🌱</button><button class="ic" data-m="6" title="Summer">🌻</button><button class="ic" data-m="9" title="Autumn">🍂</button><button class="ic gear" id="holidays-gear" title="Which holidays occur">⚙</button>
+  </div>
+  <div class="row"><span class="lbl" title="Animals">🐿️</span>
+    <button class="ic on" data-f="0" title="Rarely">🐢</button><button class="ic" data-f="1" title="Often">🐇</button><button class="ic gear" id="fauna-animals" title="Which animals occur">⚙</button>
+  </div>
+  <div class="row"><span class="lbl" title="Birds">🐦</span>
+    <button class="ic on" data-b="0" title="Rarely">🐢</button><button class="ic" data-b="1" title="Often">🐇</button><button class="ic gear" id="fauna-birds" title="Which birds occur">⚙</button>
+  </div>
+  <div class="sep"></div>
+  <div class="row"><span class="lbl" title="Where the forest lives: latitude and longitude">📍</span>
+    <input type="number" id="lat" step="0.01" min="-90" max="90" title="Latitude"><input type="number" id="lon" step="0.01" min="-180" max="180" title="Longitude"><button class="ic gear" id="game-file" title="Game settings: download, copy, paste, open">💾</button>
+  </div>
+</div>
+<div id="ui-family">
+  <div id="fam-list"></div>
+  <div class="fam-actions">
+    <button id="fam-add"    title="Add">➕</button>
+    <button id="fam-acts"   title="Actions: what can be done in the game">✋</button>
+    <button id="fam-save"   title="Family file: download, copy, paste, open">💾</button>
+  </div>
+</div>
+<input type="file" id="fam-file" accept=".json,application/json" hidden>
+<div id="ui-close"><button id="close-app" title="Close wallpaper">✕</button></div>
+<div id="ui-editor" class="side-panel">
+  <div class="sp-title">Settings</div>
+  <div class="ed-row"><label>Name</label><input type="text" id="ed-name"></div>
+  <div class="ed-row"><label>Wake up</label>
+    <input type="range" id="ed-wake" min="0" max="24" step="0.5">
+    <span id="ed-wake-v">--:--</span>
+  </div>
+  <div class="ed-row"><label>Sleep</label>
+    <input type="range" id="ed-sleep" min="0" max="24" step="0.5">
+    <span id="ed-sleep-v">--:--</span>
+  </div>
+  <div class="ed-row"><label>Temper</label>
+    <div class="ed-btns" id="ed-temper">
+      <button data-v="calm">Calm</button>
+      <button data-v="fidget">Fidgety</button>
+    </div>
+  </div>
+  <div class="ed-row"><label>Next to</label>
+    <div class="ed-btns" id="ed-follows"></div>
+  </div>
+  <div class="sp-title ed-acts-title">Actions</div>
+  <div class="act-btns" id="ed-actions"></div>
+  <div class="sp-ft"><button id="ed-cancel">Cancel</button><button id="ed-done">Done</button></div>
+</div>
+
+<script src="js/settings.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/colors.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/util.js"></script>
+<script src="js/palette.js"></script>
+<script src="js/time.js"></script>
+<script src="js/weather.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/people.js"></script>
+<script src="js/animals.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/snowman.js"></script>
+<script src="js/wood.js"></script>
+<script src="js/cones.js"></script>
+<script src="js/path.js"></script>
+<script src="js/tracks.js"></script>
+<script src="js/holidays.js"></script>
+<script src="js/render.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/ui_family.js"></script>
+<script src="js/ui_editor.js"></script>
+<script src="js/look_editor.js"></script>
+<script src="js/ui_palette.js"></script>
+<script src="js/ui_file.js"></script>
+<script src="js/ui_actions.js"></script>
+<script src="js/ui_fauna.js"></script>
+<script src="js/ui_holidays.js"></script>
+<script src="js/gsettings.js"></script>
+<script src="js/ui_gsettings.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

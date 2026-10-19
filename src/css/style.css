@@ -1,0 +1,100 @@
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1026; }
+#ui { position: fixed; left: 16px; top: 16px; padding: 10px; background: rgba(12, 18, 40, 0.82); border: 2px solid #c9d6ff33;
+      font: 600 13px/1 Consolas, "Courier New", monospace; color: #e8ecff; opacity: 0; transition: opacity .3s; user-select: none; }
+#ui:hover { opacity: 1; }
+#ui #wx { opacity: .75; font-weight: 400; }
+#ui .row { display: flex; gap: 6px; align-items: center; }
+#ui .row + .row { margin-top: 8px; }
+#ui button { font: inherit; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 6px 8px; cursor: pointer; }
+#ui button:hover { border-color: #8fa3e0; }
+#ui button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+#ui input[type=range] { flex: 1; accent-color: #e8c447; }
+#ui #hl { width: 44px; text-align: right; }
+#ui { min-width: 300px; }
+#ui .sep { border-top: 2px solid #c9d6ff22; margin: 10px 0 0; }
+#ui .sep + .row { margin-top: 10px; }
+#ui input[type=number] { width: 78px; font: inherit; color: inherit; background: #1b2440; border: 2px solid #4a5680; padding: 4px 6px; }
+#ui input[type=number].bad { border-color: #e06060; }
+#ui #wx { white-space: normal; }
+#ui .lbl { width: 26px; flex: none; text-align: center; font-size: 17px; }
+#ui button.ic { font-size: 16px; line-height: 1; padding: 4px 6px; min-width: 34px; }
+canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; image-rendering: crisp-edges; }
+#ui-family {
+  position: fixed; left: 16px; top: 240px;    /* below the first panel; adjust if needed */
+  padding: 10px; background: rgba(12, 18, 40, 0.82);
+  border: 2px solid #c9d6ff33;
+  font: 600 13px/1 Consolas, "Courier New", monospace; color: #e8ecff;
+  opacity: 0; transition: opacity .3s; user-select: none;
+}
+#ui-family:hover { opacity: 1; }
+#fam-list { display: flex; flex-direction: column; gap: 6px; }
+.fam-empty { max-width: 220px; font-weight: 400; line-height: 1.4; opacity: .8; }
+.fam-row {
+  display: flex; gap: 6px; align-items: center;
+  padding: 4px; border: 2px solid #4a5680; background: #1b2440;
+}
+.fam-row .preview {
+  width: 32px; height: 32px; image-rendering: pixelated;
+  background: #0b1026; flex: none;
+}
+.fam-row .name { flex: 1; }
+.fam-row button {
+  font: inherit; color: inherit; background: #26304f;
+  border: 2px solid #4a5680; padding: 4px 6px; cursor: pointer;
+  line-height: 1;
+}
+.fam-row button:hover, .fam-actions button:hover { border-color: #8fa3e0; }
+.fam-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.fam-actions button {
+  font: inherit; color: inherit; background: #26304f;
+  border: 2px solid #4a5680; padding: 6px 10px; cursor: pointer;
+  line-height: 1;
+}
+#ui-editor {
+  width: 260px; display: none;
+}
+#ui-editor.open { display: block; }
+#ui-editor .ed-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+#ui-editor label { width: 62px; flex: none; opacity: .8; font-weight: 400; }
+#ui-editor input[type=text] {
+  flex: 1; font: inherit; color: inherit; background: #1b2440;
+  border: 2px solid #4a5680; padding: 4px 6px;
+}
+#ui-editor input[type=range] { flex: 1; accent-color: #e8c447; min-width: 0; }
+#ui-editor .ed-row span { min-width: 34px; text-align: right; opacity: .8; }
+#ui-editor .ed-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+#ui-editor .ed-btns button {
+  font: inherit; color: inherit; background: #26304f;
+  border: 2px solid #4a5680; padding: 3px 6px; cursor: pointer;
+}
+#ui-editor .ed-btns button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+#ui-family.pinned { opacity: 1; }
+/* Wallpaper close button (Tauri app only): appears on hover, first click — a little question mark, second click — exit */
+#ui-close { display: none; position: fixed; right: 60px; top: 60px; padding: 10px; opacity: 0; transition: opacity .3s; user-select: none; }
+#ui-close.on { display: block; }
+#ui-close:hover { opacity: 1; }
+#ui-close button { font: 600 16px/1 Consolas, "Courier New", monospace; color: #e8ecff; background: rgba(12, 18, 40, 0.82);
+  border: 2px solid #4a5680; padding: 6px 10px; cursor: pointer; }
+#ui-close button:hover { border-color: #8fa3e0; }
+#ui-close button.arm { border-color: #e06060; }
+/* Actions: toggle buttons in the "Settings" panel and in the "In-game actions" panel (✋) */
+#actions-panel { width: 380px; max-width: calc(100vw - 32px); }
+.act-grp { margin-bottom: 10px; }
+.act-grp .sp-title { margin-bottom: 6px; }
+.act-btns { display: flex; flex-wrap: wrap; gap: 4px; }
+.act-btns button { font: inherit; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 4px 8px; cursor: pointer; text-align: left; }
+.act-btns button:hover { border-color: #8fa3e0; }
+.act-btns button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+.act-btns button.muted { opacity: .45; }
+#ui-editor .ed-acts-title { margin: 12px 0 6px; }
+#ui button.gear { margin-left: auto; }
+#ui.pinned { opacity: 1; }   /* while the panel to its right is open */
+#fauna-panel { width: 300px; max-width: calc(100vw - 32px); }
+#holidays-panel { width: 300px; max-width: calc(100vw - 32px); }
+#game-panel { width: 440px; max-width: calc(100vw - 32px); }
+#game-panel textarea { display: block; width: 100%; height: 300px; box-sizing: border-box; resize: vertical; font: 12px/1.3 Consolas, "Courier New", monospace;
+  color: #e8ecff; background: #1b2440; border: 2px solid #4a5680; padding: 6px; }
+#game-panel .fp-msg { min-height: 18px; margin-top: 6px; font-weight: 400; opacity: .8; }
+.fam-actions #fam-save { margin-left: auto; }   /* floppy on the right, like in the scene panel */

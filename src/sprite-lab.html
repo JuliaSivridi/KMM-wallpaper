@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprite showcase</title>
+<link rel="stylesheet" href="css/look.css">
+<style>
+  html, body { margin: 0; background: #1a2244; color: #e8ecff; font: 600 13px/1.4 Consolas, "Courier New", monospace; }
+  .app { display: grid; grid-template-columns: 300px 1fr; gap: 16px; padding: 16px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 760px) { .app { grid-template-columns: 1fr; } }
+  .panel { background: #232d57; border: 2px solid #4a5680; padding: 12px; margin-bottom: 16px; }
+  .app > div > .panel:last-child { margin-bottom: 0; }
+  h2 { font-size: 13px; margin: 0 0 8px; color: #9aa6d0; font-weight: 400; }
+  .strip { display: grid; grid-template-columns: repeat(4, max-content); gap: 12px; }
+  figure { margin: 0; text-align: center; } figcaption { margin-top: 4px; color: #9aa6d0; font-weight: 400; }
+  table { border-collapse: collapse; } th { font-weight: 400; color: #9aa6d0; padding: 4px 10px; } td { padding: 6px 10px; text-align: center; vertical-align: bottom; }
+  th.age { text-align: right; }
+  :root { --stage-a: #444f7c; --stage-b: #3d4870; }   /* background under sprites: lighter than in the game so black is visible */
+  .look-frames canvas, .look-cv { background: repeating-conic-gradient(var(--stage-a) 0 25%, var(--stage-b) 0 50%) 0 0 / 16px 16px; }
+  #frames.look-frames { grid-template-columns: repeat(4, max-content); justify-content: start; overflow-x: auto; }  /* 4 frames in a row; in the game it stays a 2×2 grid */
+  #txt { display: block; width: 100%; height: 260px; box-sizing: border-box; resize: vertical; font: 12px/1.3 Consolas, "Courier New", monospace; color: #e8ecff; background: #1b2440; border: 2px solid #4a5680; padding: 6px; }
+  #msg { min-height: 18px; margin-top: 6px; font-weight: 400; opacity: .8; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <div class="panel"><div id="ctl"></div></div>
+    <div class="panel">
+      <div class="sp-btns"><button id="copy">Copy</button><button id="paste">Paste</button></div>
+      <textarea id="txt" spellcheck="false"></textarea>
+      <div id="msg"></div>
+    </div>
+  </div>
+  <div>
+    <div class="panel">
+      <div class="seasons"><button data-s="summer" title="Summer">🌻</button><button data-s="winter" title="Winter">⛄</button></div>
+      <div id="frames"></div>
+    </div>
+    <div class="panel"><h2>All hairstyles with current colors</h2><div class="strip" id="hairs"></div></div>
+    <div class="panel"><h2>Age and height</h2><div id="sizes"></div></div>
+  </div>
+</div>
+<script src="js/colors.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/look_editor.js"></script>
+<script>
+// Initial look: adult, short hair, top + bottom, long sleeves, first color of every palette.
+const S = window.SWATCH;
+const P = { age: 'adult', height: 0, skin: S.skin[0], hair: S.hair[0], hairstyle: 'short',
+  outfit: 'top-bottom', dressColor: S.cloth[0], topColor: S.cloth[0], bottomColor: S.cloth[0], bottomKind: 'pants', sleeves: 'long',
+  shoes: S.shoes[0], hat: 'plain', hatColor: S.cloth[0] };
+let season = 'summer';
+const $ = id => document.getElementById(id);
+
+function fig(cv, label) { const f = document.createElement('figure'); f.appendChild(cv); const c = document.createElement('figcaption'); c.textContent = label; f.appendChild(c); return f; }
+function render(keepText) {
+  if (!keepText) $('txt').value = toText();
+  const pal = layerPalette(P);
+  document.querySelectorAll('.seasons button').forEach(b => b.classList.toggle('on', b.dataset.s === season));
+  renderLookFrames($('frames'), P, season, 8);
+  const hs = $('hairs'); hs.innerHTML = '';
+  LOOK_OPT.hairstyle.forEach(([v, t]) => hs.appendChild(fig(drawSpriteCanvas(composeSprite({ ...P, hairstyle: v }, season).idle, pal, 6), t)));
+  // table: age × height, figures aligned by the bottom
+  const ages = ['child', 'adult'], hs3 = [-1, 0, 1];
+  const all = ages.map(a => hs3.map(h => composeSprite({ ...P, age: a, height: h }, season).idle));
+  const maxH = Math.max(...all.flat().map(r => r.length));
+  $('sizes').innerHTML = '';
+  const table = document.createElement('table'), head = table.insertRow(); head.appendChild(document.createElement('th'));
+  hs3.forEach(h => { const th = document.createElement('th'); th.textContent = (h > 0 ? '+' : '') + h; head.appendChild(th); });
+  ages.forEach((a, i) => {
+    const tr = table.insertRow(), th = document.createElement('th'); th.className = 'age'; th.textContent = LOOK_OPT.age.find(x => x[0] === a)[1]; tr.appendChild(th);
+    hs3.forEach((h, j) => { const rows = all[i][j], td = tr.insertCell(); td.appendChild(drawSpriteCanvas(rows, pal, 6, 1, maxH - rows.length)); const c = document.createElement('div'); c.style.cssText = 'color:#9aa6d0;font-weight:400;margin-top:4px'; c.textContent = rows.length + ' px'; td.appendChild(c); });
+  });
+  $('sizes').appendChild(table);
+}
+document.querySelectorAll('.seasons button').forEach(b => b.onclick = () => { season = b.dataset.s; render(); });
+// Saving: the character as text. The text is refreshed on every change, and pasting redraws the figure and controls.
+const FIELDS = ['age', 'height', 'skin', 'hair', 'hairstyle', 'outfit', 'dressColor', 'topColor', 'bottomColor', 'bottomKind', 'sleeves', 'shoes', 'hat', 'hatColor'];
+const ENUMS = ['age', 'hairstyle', 'outfit', 'bottomKind', 'sleeves', 'hat'];
+const toText = () => JSON.stringify(Object.fromEntries(FIELDS.map(k => [k, P[k]])), null, 2);
+const say = t => { $('msg').textContent = t; };
+function applyText(text) {
+  let o; try { o = JSON.parse(text); } catch (e) { say('Cannot read the text: ' + e.message); return false; }
+  if (!o || typeof o !== 'object' || Array.isArray(o)) { say('Expected a single object like { ... }.'); return false; }
+  const next = {}; let snapped = false;
+  for (const k of ENUMS) if (k in o) {
+    if (!LOOK_OPT[k].some(x => x[0] === o[k])) { say('Field ' + k + ': value «' + o[k] + '» is not valid.'); return false; }
+    next[k] = o[k];
+  }
+  if ('height' in o) {
+    if (![-1, 0, 1].includes(+o.height)) { say('Field height: must be -1, 0 or 1.'); return false; }
+    next.height = +o.height;
+  }
+  for (const k in _SW_FIELDS) if (k in o) {
+    if (!/^#[0-9a-f]{6}$/i.test(o[k])) { say('Field ' + k + ': «' + o[k] + '» is not a color of the form #rrggbb.'); return false; }
+    next[k] = snapColor(o[k], S[_SW_FIELDS[k]]);
+    if (next[k] !== String(o[k]).toLowerCase()) snapped = true;
+  }
+  Object.assign(P, next);
+  buildLookControls($('ctl'), P, render);
+  render(true);
+  say(snapped ? 'Applied, colors snapped to the palette.' : 'Applied.');
+  return true;
+}
+$('copy').onclick = () => {
+  const ta = $('txt'); ta.value = toText(); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  if (ok) say('Copied.');
+  else if (navigator.clipboard) navigator.clipboard.writeText(ta.value).then(() => say('Copied.'), () => say('Failed: text is selected, press Ctrl+C.'));
+  else say('Failed: text is selected, press Ctrl+C.');
+};
+$('paste').onclick = () => {
+  const manual = () => { $('txt').focus(); $('txt').select(); say('Press Ctrl+V: the text in the field is selected and will be replaced.'); };
+  if (!navigator.clipboard || !navigator.clipboard.readText) return manual();
+  navigator.clipboard.readText().then(t => { $('txt').value = t; if (applyText(t)) render(); }, manual);
+};
+$('txt').addEventListener('input', () => applyText($('txt').value));   // paste via Ctrl+V or manual edits
+
+buildLookControls($('ctl'), P, render);
+render();
+</script>
+</body>
+</html>

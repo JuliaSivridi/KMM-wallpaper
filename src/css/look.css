@@ -1,0 +1,44 @@
+/* Look builder: shared by the showcase and the in-game dialog */
+.look-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 8px; }
+.look-row > label { width: 76px; flex: none; font-weight: 400; opacity: .8; padding-top: 4px; }
+.look-row input[type=range] { flex: 1; min-width: 0; font: inherit; color: inherit; background: #1b2440; border: 2px solid #4a5680; padding: 3px 4px; accent-color: #e8c447; }
+.look-row input[type=range] { flex: 0 0 54px; width: 54px; }
+.look-row .v { min-width: 20px; text-align: left; padding-top: 4px; }
+.look-ch { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.look-ch button { padding: 2px; line-height: 0; background: #1b2440; border: 2px solid #4a5680; cursor: pointer; }
+.look-ch button:hover { border-color: #8fa3e0; }
+.look-ch button.on { border-color: #e8c447; background: #26304f; }
+.look-ch canvas { display: block; }
+.look-ch.c4 { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; }
+.look-sw { display: grid; grid-template-columns: repeat(6, 20px); gap: 4px; flex: 1; }
+.look-sw button { width: 20px; height: 20px; padding: 0; border: 2px solid #4a5680; cursor: pointer; }
+.look-sw button.on { border-color: #e8c447; outline: 2px solid #e8c447; outline-offset: 1px; }
+.look-frames { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.look-frames figure { margin: 0; text-align: center; }
+.look-frames figcaption { margin-top: 4px; opacity: .7; font-weight: 400; }
+.look-frames canvas, .look-cv { display: block; margin: 0 auto; image-rendering: pixelated; border: 2px solid #4a5680;
+  background: repeating-conic-gradient(#1b2440 0 25%, #151d38 0 50%) 0 0 / 16px 16px; }
+/* Side panels ("Settings" and "Palette") — one style */
+.side-panel { position: fixed; z-index: 50; box-sizing: border-box; overflow: auto; padding: 12px; background: rgba(12, 18, 40, 0.92);
+  border: 2px solid #c9d6ff33; font: 600 13px/1.4 Consolas, "Courier New", monospace; color: #e8ecff; user-select: none; }
+.sp-title { margin-bottom: 10px; opacity: .7; font-weight: 400; }
+.sp-ft { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.sp-btns { display: flex; gap: 8px; margin-bottom: 8px; }
+.sp-btns button, .sp-ft button, .seasons button { font: inherit; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 6px 12px; cursor: pointer; }
+.sp-btns button:hover, .sp-ft button:hover, .seasons button:hover { border-color: #8fa3e0; }
+.seasons { display: flex; gap: 6px; margin-bottom: 10px; }
+.seasons button { font-size: 16px; line-height: 1; padding: 4px 8px; }
+.seasons button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+.side-panel input[type=text] { flex: 1; min-width: 0; font: inherit; color: inherit; background: #1b2440; border: 2px solid #4a5680; padding: 4px 6px; }
+#look-panel { width: 600px; max-width: calc(100vw - 32px); }
+#look-panel .lp-body { display: grid; grid-template-columns: 260px 1fr; gap: 14px; }
+/* The right column stretches to the height of the left one; "Cancel" and "Done" are pinned to its bottom,
+   so the bottom edge of the buttons aligns with the bottom edge of the "Shoes" row. */
+#look-panel .lp-side { display: flex; flex-direction: column; min-width: 0; }
+#look-panel .lp-side .sp-ft { margin-top: auto; padding-top: 10px; }
+/* Last row of the left column (shoes): remove bottom margin; the label is 2 px higher than the swatches, hence -2px */
+#look-panel .ctl .look-row:last-child { margin-bottom: -2px; }
+#file-panel { width: 440px; max-width: calc(100vw - 32px); }
+#file-panel textarea { display: block; width: 100%; height: 220px; box-sizing: border-box; resize: vertical; font: 12px/1.3 Consolas, "Courier New", monospace;
+  color: #e8ecff; background: #1b2440; border: 2px solid #4a5680; padding: 6px; }
+#file-panel .fp-msg { min-height: 18px; margin-top: 6px; font-weight: 400; opacity: .8; }
