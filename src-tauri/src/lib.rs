@@ -44,7 +44,6 @@ fn quit_app(app: tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![read_family_file, read_settings_file, quit_app])
         .setup(|app| {
             if let Ok(mut exe_path) = std::env::current_exe() {
