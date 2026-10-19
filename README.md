@@ -38,8 +38,8 @@ The official list of prerequisites is here: <https://tauri.app/start/prerequisit
 ### Build
 
 ```bash
-git clone https://github.com/<your-name>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/JuliaSivridi/KMM-wallpaper
+cd KMM-wallpaper
 npm install
 npm run tauri build
 ```
@@ -50,7 +50,7 @@ The first build takes a while (Rust compiles all dependencies) and needs interne
 The installer appears here:
 
 ```
-src-tauri/target/release/bundle/nsis/kmm-wallpaper_0.1.0_x64-setup.exe
+src-tauri/target/release/bundle/nsis/kmm-wallpaper_*_x64-setup.exe
 ```
 
 ### Install and use
@@ -120,3 +120,5 @@ docs/                 specifications (English, Russian)
 - Weather data: [Open-Meteo](https://open-meteo.com) (CC BY 4.0).
 - Built with [Tauri](https://tauri.app).
 - Licence: MIT
+
+Developed with the help of Claude (Anthropic) as an AI coding assistant.

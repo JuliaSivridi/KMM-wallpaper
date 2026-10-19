@@ -1648,7 +1648,7 @@ dependencies = [
 
 [[package]]
 name = "kmm-wallpaper"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "tauri",
  "tauri-build",

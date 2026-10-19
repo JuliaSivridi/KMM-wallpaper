@@ -7,7 +7,7 @@ const ACTIONS = [
   { id: 'chop',    ages: ['adult'],          icon: '🪓', name: 'Chop firewood',    seasons: ['winter', 'spring', 'autumn'] },
   { id: 'snowman', ages: ['child'],          icon: '⛄', name: 'Build a snowman',  seasons: ['winter'] },
   { id: 'cones',   ages: ['child'],          icon: '🌰', name: 'Collect cones',    seasons: ['autumn'] },
-  { id: 'berries', ages: ['adult', 'child'], icon: '🫐', name: 'Pick berries',     seasons: ['summer', 'autumn'] },
+  { id: 'berries', ages: ['adult', 'child'], icon: '🍓', name: 'Pick berries',     seasons: ['summer', 'autumn'] },
   { id: 'fire',    ages: ['adult', 'child'], icon: '🔥', name: 'Sit by the fire',  seasons: [] },
 ];
 const ACT_GROUPS = [['adult', 'Adults'], ['child', 'Children'], ['all', 'Everyone']];

@@ -1,6 +1,6 @@
-# Karelian Forest Hut — Specification
+# Karelian Forest Cabin — Specification
 
-Living pixel-art desktop wallpaper: a Karelian mixed forest with a hut where a family lives. Time of day, seasons and weather follow the real clock and the real forecast. You can put the family together yourself in the builder: people, appearance, schedule. The project is plain JavaScript with no dependencies, split into modules.
+Living pixel-art desktop wallpaper: a Karelian mixed forest with a cabin where a family lives. Time of day, seasons and weather follow the real clock and the real forecast. You can put the family together yourself in the builder: people, appearance, schedule. The project is plain JavaScript with no dependencies, split into modules.
 
 This document describes: how to run it, what is done and how it is built, the drawing rules, and what could be done next.
 
@@ -23,7 +23,7 @@ This document describes: how to run it, what is done and how it is built, the dr
 
 **The showcase** `sprite-lab.html` — a separate sprite-builder page, not connected to the in-game family: a single character that depends only on the chosen settings. On the left is the builder (the same `buildLookControls` as in the "Palette" dialog) and under it a "Copy / Paste" block with the appearance as text. On the right are the season buttons 🌻 / ⛄ and four frames in a row (standing, sitting, step 1, step 2), below that all hairstyles (4 per row) and an "age × height" table (child and adult, −1, 0, +1). It exists to draw and check layers without running the whole scene. It includes only `colors.js`, `layers.js`, `look_editor.js` and `look.css`. Initial look: adult, short hair, top + bottom, long sleeves, the first colors of every palette.
 
-The appearance text is refreshed on any change. Pasting (the button or Ctrl+V directly in the field) redraws the figure and the buttons. Fourteen fields are read: `age`, `height`, `skin`, `hair`, `hairstyle`, `outfit`, `dressColor`, `topColor`, `bottomColor`, `bottomKind`, `sleeves`, `shoes`, `hat`, `hatColor`. Extra fields (`id`, `name`, etc.) are ignored, missing ones stay as they are, colors are snapped to the palette. An invalid value or unreadable text changes nothing, and the reason is written under the field. The showcase doesn't know about schedule, temperament or name: when moving to a family file they must be added.
+The appearance text is refreshed on any change. Pasting (the button or Ctrl+V directly in the field) redraws the figure and the buttons. Fourteen fields are read: `age`, `height`, `skin`, `hair`, `hairstyle`, `outfit`, `dressColor`, `topColor`, `bottomColor`, `bottomKind`, `sleeves`, `shoes`, `hat`, `hatColor`. Extra fields (`id`, `name`, etc.) are ignored, missing ones stay as they are, colors are snapped to the palette. An invalid value or unreadable text changes nothing, and the reason is written under the field. The showcase doesn't know about schedule, temper or name: when moving to a family file they must be added.
 
 ### Panels (invisible, appear when hovering over the top-left corner)
 
@@ -41,7 +41,7 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 **Side panels** open to the right of the list, with matching tops. Only one is open: opening a second closes the first as "Cancel". One rule everywhere: edits accumulate in the panel and are applied only on "Done", "Cancel" closes the panel without changes. "Animals", "Birds" and "Holidays" open to the right of the scene panel.
 
 **Interface without dropdowns and system windows.** Buttons everywhere (`<select>`, `alert` and `confirm` are not used): that way the panels look like part of the game. Deleting a character is done with two presses on 🗑, messages are shown as a line in the panel.
-- **Settings** — name, wake-up, sleep, temperament, "next to" (a row of buttons with names) and "Actions": buttons of the actions available to that age; pressed — does it, released — doesn't.
+- **Settings** — name, wake-up, sleep, temper, "next to" (a row of buttons with names) and "Actions": buttons of the actions available to that age; pressed — does it, released — doesn't.
 - **Palette** — the look builder: age (child, adult), hairstyle, hat, clothes, bottom and sleeves are chosen with picture buttons (small drawings of the variants, not dropdowns), height — with a slider −1…+1, then colors; on the right four frames (standing, sitting, step 1, step 2) and the 🌻 summer / ⛄ winter toggle; "Cancel" and "Done" sit under the frames, with the bottom edge of the buttons on the same line as the "Shoes" row. Order: age, height, hairstyle, hat, clothes, bottom, sleeves, colors (6 per row). Hairstyles: long, ponytail, bun, curly, bob, short, mohawk, bald (4 per row); clothes: top + bottom, dress.
 - **Family file** — one text field and the buttons "Download", "Copy", "Paste" (from the clipboard into the field), "Open" (from a file into the field). "Done" applies the text from the field as a new family.
 - **Game settings** (💾 in the coordinate row of the scene panel) — everything chosen on the scene panels, as one text: the buttons "Download", "Copy", "Paste", "Open", a field and "Cancel" / "Done". Opens to the right of the scene panel, format below in "Saving".
@@ -56,7 +56,7 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 
 ### The world
 - **Mixed forest** of pines and birches in rows from the horizon to the foreground (10 depth rows), distant trees smaller and in haze. Undergrowth, bushes (juniper, rowan, deciduous), boulders, moss, bilberry.
-- **A red hut** with white window frames, smoke from the chimney, a glowing window. A fire pit with two log benches. To the left of the hut a woodshed and a chopping block.
+- **A red cabin** with white window frames, smoke from the chimney, a glowing window. A fire pit with two log benches. To the left of the cabin a woodshed and a chopping block.
 - **Sky:** Bayer-matrix dithering, sun and moon along arcs, twinkling stars, clouds, northern lights.
 
 ### Time, seasons, day length
@@ -71,13 +71,13 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 - **Cloud cover** changes the number of clouds, the greyness of the sky, the visibility of stars, the moon and the aurora.
 - **Precipitation:** rain (the wind tilts the drops), snow, fog, thunderstorm with flashes.
 - **Wind** affects cloud speed and the swaying of grass.
-- **Heavy rain** (intensity ≥ 0.45): the family goes into the hut, the fire is not lit, animals and birds don't appear.
+- **Heavy rain** (intensity ≥ 0.45): the family goes into the cabin, the fire is not lit, animals and birds don't appear.
 - **In summer, snow** turns into rain.
 - **Without a network** the scene works without real weather.
 - The data is a forecast model, not a weather station: it may show a local downpour over the house as drizzle.
 
 ### The family
-Any number of characters, including zero: on the first launch the family is empty, there is nobody in the forest, the hut stands dark and the fire is not lit. People are added by hand (➕) or loaded from a file (💾). Anyone can be deleted, even the last one. Each is an object in `window.FAMILY`:
+Any number of characters, including zero: on the first launch the family is empty, there is nobody in the forest, the cabin stands dark and the fire is not lit. People are added by hand (➕) or loaded from a file (💾). Anyone can be deleted, even the last one. Each is an object in `window.FAMILY`:
 
 | Field | Values |
 |---|---|
@@ -96,16 +96,16 @@ Any number of characters, including zero: on the first launch the family is empt
 | `follows` | id of the character he stays next to, or `null` |
 | `actions` | which actions he does: `{ "shovel": true, "chop": false }`; no field or key — enabled |
 
-- **Actions:** `shovel` clear the path (adults, winter), `chop` chop firewood (adults, not summer), `snowman` build a snowman (children, winter), `cones` collect cones (children, autumn), `berries` berries (everyone, summer and autumn), `fire` sit by the fire (everyone). A person does an action only if it is enabled both in ✋ and for him personally. If an action is turned off while he is busy with it, he drops it and chooses another (the bucket of cones returns to the porch) (`js/actions.js`).
+- **Actions:** `shovel` clear the path (adults, winter), `chop` chop firewood (adults, not summer), `snowman` build a snowman (children, winter), `cones` collect pine cones (children, autumn), `berries` berries (everyone, summer and autumn), `fire` sit by the fire (everyone). A person does an action only if it is enabled both in ✋ and for him personally. If an action is turned off while he is busy with it, he drops it and chooses another (the bucket of pine cones returns to the porch) (`js/actions.js`).
 - **Foreground lines:** people walk and stand not along one line but along four: y = 156, 158, 160, 162 (`LINES` in `js/people.js`). They coincide with the depth-layer edges, so the drawing order is correct by itself: the nearer covers the farther. The line is chosen at random, with the main line 160 having twice the weight. On 160 are tied the fire, the snowman, the shovel, chopping and the cones; the other activities (a walk, sitting under a tree, berries, games) happen on any line. A fidget with `follows` sits on the leader's line. Above line 159 by the fire (±20 px) and "inside" boulders nobody stands; straight across the fire above 159 is not walked, a detour via 160.
-- In the morning they come out of the hut one by one, in the evening they go to sleep, with a "z" over the roof.
+- In the morning they come out of the cabin one by one, in the evening they go to sleep, with a "z" over the roof.
 - The fire burns from dusk (not before 15:00, not later than 20:30) as long as at least one adult is awake.
-- **The window light** is on only if one of the awake people is inside the hut (e.g. hiding from the rain). Sleepers and those outside don't turn on the light.
+- **The window light** is on only if one of the awake people is inside the cabin (e.g. hiding from the rain). Sleepers and those outside don't turn on the light.
 - **"Calm" behavior:** they walk, sit under trees, pick berries (summer and autumn), sit by the fire. There are six spots by the fire: two logs and two ground spots on each side of them; one spot — one person. A taken spot (someone stands there or is going there) is skipped; if there are no spots, the person does something else. The same rule for sitting under a tree and picking berries: sprites must not sit on top of each other.
 - **Snowman (winter, children only):** a child builds a snowman to the left of the big boulder: rolls balls over the snow (big, medium, small), stacks them and dresses it: scarf, arms, hat. The whole job takes about 10 minutes. One child builds it from start to finish, others don't help. Building is possible while the snow is wet (from −5° to +4°). From +5° the snowman melts: first the decor falls off, then he settles into a mound that shrinks to zero; a settled one is replaced by the child with a new one. In winter the snowman's spot is taken, nobody sits there (`js/snowman.js`).
-- **Clearing the path (winter, adults only):** the path from the hut is snowed over in winter, snowfall covers it again, without snowfall it stays as it is. Any adult clears it with a shovel if nobody else is already clearing: goes from the door outward, about a minute. A clear path is drawn in bare-ground color, a snowed-over one in snow color, intermediate states as a checkerboard of pixels. After a restart the path is snowed over again (`js/path.js`).
-- **Firewood (adults only, not in summer):** to the left of the hut a woodshed, a bit in front a chopping block. The woodshed shows how much wood is in it: it grows when an adult brings an armful, and shrinks while the stove (except in summer) and the fire burn. An adult chops when there is room in the woodshed: puts a log on the block, swings, strikes, the halves fly apart; having collected an armful, he carries it to the woodshed, and sometimes puts it into the fire, and the flame flares up brighter. An armful takes about 20 seconds. One adult chops at a time. The woodshed and block spot is taken, nobody sits there (`js/wood.js`).
-- **Cones (autumn, children only):** cones now and then fall from the pines and lie on the ground (they don't fall on boulders). There is one bucket: a child goes collecting only when enough cones have gathered on the ground for a full bucket (six), takes it from the porch, collects until full and carries it to the fire. There he stands in front of the flame, farther from those sitting, and throws the cones into the fire, sparks fly. If the fire is not lit, he carries the bucket of cones back to the porch, and in the evening takes it and throws the cones into the fire (`js/cones.js`).
+- **Clearing the path (winter, adults only):** the path from the cabin is snowed over in winter, snowfall covers it again, without snowfall it stays as it is. Any adult clears it with a shovel if nobody else is already clearing: goes from the door outward, about a minute. A clear path is drawn in bare-ground color, a snowed-over one in snow color, intermediate states as a checkerboard of pixels. After a restart the path is snowed over again (`js/path.js`).
+- **Firewood (adults only, not in summer):** to the left of the cabin a woodshed, a bit in front a chopping block. The woodshed shows how much wood is in it: it grows when an adult brings an armful, and shrinks while the stove (except in summer) and the fire burn. An adult chops when there is room in the woodshed: puts a log on the block, swings, strikes, the halves fly apart; having collected an armful, he carries it to the woodshed, and sometimes puts it into the fire, and the flame flares up brighter. An armful takes about 20 seconds. One adult chops at a time. The woodshed and block spot is taken, nobody sits there (`js/wood.js`).
+- **Cones (autumn, children only):** pine cones now and then fall from the pines and lie on the ground (they don't fall on boulders). There is one bucket: a child goes collecting only when enough pine cones have gathered on the ground for a full bucket (six), takes it from the porch, collects until full and carries it to the fire. There he stands in front of the flame, farther from those sitting, and throws the pine cones into the fire, sparks fly. If the fire is not lit, he carries the bucket of pine cones back to the porch, and in the evening takes it and throws the pine cones into the fire (`js/cones.js`).
 - **"Fidget" behavior:** they run, jump, play; if `follows` is set — they stay close to that one: by the fire they sit on the free spot closest to him (no spots — next to him on the ground), pick berries together.
 
 ### Animals
@@ -121,16 +121,16 @@ A separate timer, also every 5–10 minutes. Only in the daytime and not in a do
 
 ### Holidays
 Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There are two for now: Halloween (15–31 October, everything disappears on 1 November) and New Year (15 December – 14 January). Each can be disabled in ⚙ (season row): then its decorations are absent.
-- **Pumpkins** appear in the forest one every two days (the first on the 15th, the ninth by the 31st). The spots are fixed, not by the hut, the fire and boulders.
+- **Pumpkins** appear in the forest one every two days (the first on the 15th, the ninth by the 31st). The spots are fixed, not by the cabin, the fire and boulders.
 - **Jack-o'-lantern** stands to the right of the end of the path to the house. From dusk its eyes and mouth glow and flicker, the ground around is lit.
-- **Garlands** (up to three) hang between neighbouring front-row trees. Bulbs 2×2 alternate orange and purple, dim by day, lit and flickering in the evening.
+- **Garlands** (up to five) hang between neighbouring front-row trees. Bulbs 2×2 alternate orange and purple, dim by day, lit and flickering in the evening.
 - **The web** is one, round (8 spokes, 2 rings), between two trees nearer the middle of the scene, above heads, below the needles. Every 50 seconds a little spider descends on a thread, hangs, and climbs back up. Its place is found before the garlands, and they go around it.
 - **Skeleton decoration** 7×13 stands in the bottom-left corner (facing the viewer). In the evening its eye sockets glow and flicker, like the jack-o'-lantern's. The foreground grass next to it is not drawn during the holiday (otherwise it covers its legs), then it grows back.
-- **Ghosts** Pac-Man style (Blinky, Pinky, Inky, Clyde), 7×8, 25% opacity. At dusk and at night every 1–3 minutes (with `&animals=fast` — every 4–10 seconds) one flies out, sometimes a chain of 2–4. They float a little above the ground at the far-forest depth, hide behind nearby trunks, fly from edge to edge.
+- **Ghosts** Pac-Man style (Blinky, Pinky, Inky, Clyde), 7×8, 25% transparent. At dusk and at night every 1–3 minutes (with `&animals=fast` — every 4–10 seconds) one flies out, sometimes a chain of 2–4. They float a little above the ground at the far-forest depth, hide behind nearby trunks, fly from edge to edge.
 
 **New Year.** Runs from 15 December to 14 January, and also always while winter ⛄ is selected manually on the panel. Without a day `?month=1` gives the 15th, so for testing you also need `&day=`.
 - **Garlands** red-and-green, up to five. They hang between trees of the front rows standing on the same or neighbouring lines, each with at least five bulbs. In the evening they light up and flicker. On a narrow window there are few trees, and only two or three garlands come out.
-- **The fir tree** is a little taller than a tall adult, to the right of the fire, above the walking lines, next to the front-row trees and not on boulders. It has individual multicolored bulbs, a golden star on top, in winter snow on the tier tips. By day the bulbs are dim, in the evening they burn at full color and each flickers in its own way. People standing closer than the tree cover both it and its lights; the light doesn't fall on people (unlike the fire).
+- **The Christmas tree** is a little taller than a tall adult, to the right of the fire, above the walking lines, next to the front-row trees and not on boulders. It has individual multicolored bulbs, a golden star on top, in winter snow on the tier tips. By day the bulbs are dim, in the evening they burn at full color and each flickers in its own way. People standing closer than the tree cover both it and its lights; the light doesn't fall on people (unlike the fire).
 
 ### Saving
 - **Family:** stored in `localStorage` (key `forest.family.v1`) and in a file. The file is `forest-family.json`, an array of people. Loading a file **fully replaces** the family. There is no "default" family in the page code (the default person exists only in the Tauri part, see below): the wallpaper is not tied to someone's particular family, the family file is personal and is given to friends separately (or not).
@@ -138,7 +138,6 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - **Snowman:** readiness, owner and save time in `localStorage` (`forest.snowman.v1`); after a restart he returns if it is still winter and less than 100 days have passed. Doesn't go into the family file.
 - **Firewood:** the number of logs in the woodshed in `localStorage` (`forest.wood.v1`), doesn't go into the family file.
 - **Game settings** (`js/gsettings.js`): the file `settings.json`, not connected to the family and not going with it. Everything chosen on the scene panels. Fields missing from the file stay as they are; unknown ids in lists are skipped; an error in any field cancels the application entirely.
-
   ```json
   { "location": { "lat": 61.07, "lon": 28.28 }, "time": "now", "weather": "now", "season": "now",
     "holidays": "all", "actions": "all",
@@ -148,7 +147,7 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - **Switches ✋ and ⚙:** `localStorage` (`forest.actions.v1`, `forest.fauna.v1`, `forest.holidays.v1`), don't go into the family file, but are included in the game settings (`settings.json`). A character's personal actions — the `actions` field in the family file.
 - On loading and at startup colors are snapped to the nearest palette colors.
 - **First launch in Tauri (settings):** the same for game settings: if there is no `forest.gs.v1` record at all, the page asks for the `read_settings_file` command, which reads `settings.json` next to the exe (no file — it returns a sample embedded from `src-tauri/src/settings_default.json`).
-- **First launch in Tauri (family):** if there is no family record in `localStorage` at all, the page asks Tauri for the `read_family_file` command: it reads `family.json` next to the exe (no file — it returns the default person embedded in the exe from `src-tauri/src/family_default.json`), and the family is applied. After that it lives in `localStorage`: manual edits to the file will only be picked up after clearing the webview data or loading via 📁. An empty family left by the person themselves (the record `[]`) is not overwritten by the file (`js/main.js`). In a regular browser there is no command, and the family is empty by default.
+- **First launch in Tauri (family):** if there is no family record in `localStorage` at all, the page asks Tauri for the `read_family_file` command: it reads `family.json` next to the exe (no file — it returns the default person embedded in the exe from `src-tauri/src/family_default.json`), and the family is applied. After that it lives in `localStorage`: manual edits to the file will only be picked up after clearing the webview data or loading via 💾. An empty family left by the person themselves (the record `[]`) is not overwritten by the file (`js/main.js`). In a regular browser there is no command, and the family is empty by default.
 
 ---
 
@@ -169,10 +168,10 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 | `js/sprites.js` | animal and bird sprites |
 | `js/people.js`, `js/animals.js`, `js/particles.js` | people's, animals' and birds' behavior, particles |
 | `js/snowman.js` | the snowman: rolling balls, melting, saving |
-| `js/path.js` | the winter path from the hut: snow on it, clearing with a shovel |
+| `js/path.js` | the winter path from the cabin: snow on it, clearing with a shovel |
 | `js/wood.js`, `js/cones.js` | firewood (woodshed, chopping block, chopping) and cones (falling, collecting, bucket) |
 | `js/tracks.js` | short footprints in the snow |
-| `js/holidays.js` | holidays: Halloween (pumpkins, jack-o'-lantern, garlands, web with a spider, skeleton, ghosts) and New Year (garlands, fir tree) |
+| `js/holidays.js` | holidays: Halloween (pumpkins, jack-o'-lantern, garlands, web with a spider, skeleton, ghosts) and New Year (garlands, Christmas tree) |
 | `js/storage.js`, `js/ui.js` | family saving; the scene panel and the wallpaper close button |
 | `js/ui_family.js`, `js/ui_editor.js`, `js/look_editor.js`, `js/ui_palette.js`, `js/ui_file.js`, `js/ui_actions.js`, `js/ui_fauna.js`, `js/ui_holidays.js` | family list and side panels (including ✋ and ⚙) |
 | `js/gsettings.js`, `js/ui_gsettings.js` | game settings: collecting and applying, remembering, reading `settings.json`; the 💾 panel |
@@ -184,13 +183,13 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 ### Rendering
 - **Internal resolution:** height 180 px, width proportional to the screen. The canvas is stretched to the whole screen with `image-rendering: pixelated`.
 - **20 frames per second**, paused when `document.hidden`.
-- **The winter path** from the hut is not included in the ground cache: the snow on it changes, so it is drawn every frame as a layer-0 object (before everything else).
+- **The winter path** from the cabin is not included in the ground cache: the snow on it changes, so it is drawn every frame as a layer-0 object (before everything else).
 - **Caches** are rebuilt every 30 game seconds or when the season, cloud cover or size changes: the sky (`ImageData` with dithering) and the ground (**13 depth layers**, edges in `LAYER_EDGES`: an object goes into a layer by its base `y`). The edges are denser where people walk: 156, 159 (fire boundary), 161. The people line y=160 lies in the layer [159, 161).
-- **Drawing order.** For each layer: the layer's picture from the cache, then the footprints in the snow, then the dynamic objects of that layer, sorted by `y` (by `x` when equal). The dynamic objects are collected by `sceneItems()`: people, animals and ground birds, the snowman and ball, firewood and the woodshed, cones and bucket, jack-o'-lantern, spider, winter path. Each has a base `y`, the layer is computed from it. Exceptions with a flag: `over` (over the segment: birds in the air and on trees, smoke) and `l` (explicit layer, for the path).
+- **Drawing order.** For each layer: the layer's picture from the cache, then the footprints in the snow, then the dynamic objects of that layer, sorted by `y` (by `x` when equal). The dynamic objects are collected by `sceneItems()`: people, animals and ground birds, the snowman and ball, firewood and the woodshed, pine cones and bucket, jack-o'-lantern, spider, winter path. Each has a base `y`, the layer is computed from it. Exceptions with a flag: `over` (over the segment: birds in the air and on trees, smoke) and `l` (explicit layer, for the path).
 - **Segments and glowing objects.** The scene is drawn onto several segment canvases, the boundaries between them set by the `BREAKS` list (boundary `y` and a draw function). Each segment is dimmed at night separately, and between the segments a glowing object is drawn that must not be dimmed. There are two boundaries for now: the New Year tree lights at y=154 and the fire at y=159 (flame and sparks). Whatever is deeper is behind the flame, whatever is at y=159 and closer covers it. Foreground grass, rain, snow and leaves in the air are drawn at the end of the last segment. A new boundary = a new entry in `BREAKS`.
 - **Lighting:** each of the canvases is dimmed separately, night dimming and the warm dusk tint are applied via `source-atop`; light sources (fire, window, fireflies, sparks) are drawn after the dimming via `lighter`.
 - **Deterministic layout:** the `mulberry32` generator with fixed seeds, the forest is the same on every launch and for the same scene width (`W`, from the window proportions). A different window or monitor gives a different forest.
-- **Statics and dynamics.** Trees, bushes, all boulders, pumpkins, the hut, the chopping block are baked into the layers once, the rest is drawn every frame (the list above). Within one layer the statics are always below the dynamics; the layer strip is 2 px (more precisely in the 156–161 zone).
+- **Statics and dynamics.** Trees, bushes, all boulders, pumpkins, the cabin, the chopping block are baked into the layers once, the rest is drawn every frame (the list above). Within one layer the statics are always below the dynamics; the layer strip is 2 px (more precisely in the 156–161 zone).
 
 ### People's sprites (layers)
 - Each age has its own body template: **adult** 8×14, **child** 6×8. Height (`height`) −1, 0, +1 is duplicating or removing one torso row. The exception is **child +1**: this is a separately drawn sprite (the `KID_TALL` layer set, the `kidTall` template, 8×12): head like an adult, torso two rows shorter than an adult. It has only one height, the ±1 adjustment is not applied; when sitting it keeps shoulders and arms.
@@ -203,7 +202,7 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - The palettes are limited: skin 6 colors, hair 10, clothes and hats 12, shoes 6. The builder chooses only from them.
 
 ### Behavior
-- **Characters** — a simple state machine: `walk` (along a route of points), `idle`, `sit`, `pick`, `play`, `build` (rolls balls and dresses the snowman), `shovel` (clears the path), hidden in the hut. `choose()` picks the next activity with weights depending on time, season, weather and `temper`. The route is built by `buildPath` (points with a line `y`), a free spot is checked by `spotFree` by `x` and the line (people on neighbouring lines must not stand on top of each other).
+- **Characters** — a simple state machine: `walk` (along a route of points), `idle`, `sit`, `pick`, `play`, `build` (rolls balls and dresses the snowman), `shovel` (clears the path), hidden in the cabin. `choose()` picks the next activity with weights depending on time, season, weather and `temper`. The route is built by `buildPath` (points with a line `y`), a free spot is checked by `spotFree` by `x` and the line (people on neighbouring lines must not stand on top of each other).
 - **Animals and birds** — a shared `ANI` array, each species has its own states: squirrel `toTree / up / perch / jump / down / away`, hare `run / stop`, bird `fly / perch`. Squirrel jumps — the `hopStep` function.
 
 ---
@@ -267,7 +266,7 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - **Festive costume palette:** a separate set of outfits for the holidays (a witch's cap, a ghost sheet, etc.).
 
 ### 5.4. Toward a game
-- Point-and-click: a click sends a character to a point, the hut interior as a separate scene, items (mushrooms, berries, cones, firewood), small quests from what already happens.
+- Point-and-click: a click sends a character to a point, the cabin interior as a separate scene, items (mushrooms, berries, pine cones, firewood), small quests from what already happens.
 - First decide what kind of game this is: a cozy sandbox, a game for a child, or a story with an adventure.
 
 ### 5.5. Decided not to do
