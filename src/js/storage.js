@@ -30,6 +30,7 @@ function loadFromStorage() {
 function applyFamily(arr) {
   if (typeof closeEditor === 'function') closeEditor();   // the panels held a reference to the old character
   if (typeof closeLookDialog === 'function') closeLookDialog();
+  if (typeof closeCostumeDialog === 'function') closeCostumeDialog();
   window.FAMILY = snapFamily(arr);
   window.FAMILY_BY_ID = {};
   for (const p of window.FAMILY) window.FAMILY_BY_ID[p.id] = p;

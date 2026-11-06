@@ -34,7 +34,7 @@ canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated
   padding: 4px; border: 2px solid #4a5680; background: #1b2440;
 }
 .fam-row .preview {
-  width: 32px; height: 32px; image-rendering: pixelated;
+  width: 40px; height: 40px; image-rendering: pixelated;
   background: #0b1026; flex: none;
 }
 .fam-row .name { flex: 1; }
@@ -98,3 +98,10 @@ canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated
   color: #e8ecff; background: #1b2440; border: 2px solid #4a5680; padding: 6px; }
 #game-panel .fp-msg { min-height: 18px; margin-top: 6px; font-weight: 400; opacity: .8; }
 .fam-actions #fam-save { margin-left: auto; }   /* floppy on the right, like in the scene panel */
+/* Holiday costumes dialog (🎭) */
+#costume-panel { width: 520px; max-width: calc(100vw - 32px); }
+#costume-panel .cp-body { display: grid; grid-template-columns: 230px 1fr; gap: 14px; }
+#costume-panel .cp-side { display: flex; flex-direction: column; min-width: 0; }
+#costume-panel .cp-side .sp-ft { margin-top: auto; padding-top: 10px; }
+#costume-panel .cp-grp { margin-bottom: 10px; }
+#costume-panel .cp-slot { margin: 6px 0 4px; opacity: .7; font-weight: 400; }

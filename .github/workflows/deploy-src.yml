@@ -3,6 +3,9 @@ name: Deploy src to GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy-src.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './src'  # Ключевой момент: здесь указана ваша папка src
+          path: './src'
       
       - name: Deploy to GitHub Pages
         id: deployment

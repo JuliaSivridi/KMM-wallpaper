@@ -16,11 +16,11 @@ const SidePanel = {
   },
 };
 
-// Preview in the list: standing character (summer), at the bottom of a 16×16 square.
-function renderPreview(person) {
-  const rows = composeSprite(person, 'summer').idle, pal = layerPalette(person);
-  const cv = document.createElement('canvas'); cv.className = 'preview'; cv.width = 16; cv.height = 16;
-  const g = cv.getContext('2d'), w = rows[0].length, ox = Math.floor((16 - w) / 2), oy = 16 - rows.length - 1;
+// Preview in the list: standing character (summer, in a holiday costume while the holiday lasts), at the bottom of a 20×20 square (a tall hat needs the room).
+function renderPreview(person, E) {
+  const spr = composeSprite(person, 'summer', activeCostume(person, E)), rows = spr.idle, pal = Object.assign(layerPalette(person), spr.pal || {});
+  const cv = document.createElement('canvas'); cv.className = 'preview'; cv.width = 20; cv.height = 20;
+  const g = cv.getContext('2d'), w = rows[0].length, ox = Math.floor((20 - w) / 2), oy = 20 - rows.length - 1;
   rows.forEach((row, j) => { for (let i = 0; i < w; i++) { const c = row[i]; if (c === '.') continue; g.fillStyle = pal[c] || '#f0f'; g.fillRect(ox + i, oy + j, 1, 1); } });
   return cv;
 }
@@ -28,6 +28,7 @@ function renderPreview(person) {
 // Redraws the whole list.
 function renderFamilyList() {
   famListEl.innerHTML = '';
+  const E = env(), hols = activeHolidays(E);
   if (!window.FAMILY.length) {
     const hint = document.createElement('div'); hint.className = 'fam-empty';
     hint.textContent = 'No family yet: ➕ create a person, 💾 load from a file.';
@@ -37,7 +38,7 @@ function renderFamilyList() {
     const row = document.createElement('div');
     row.className = 'fam-row';
 
-    row.appendChild(renderPreview(person));
+    row.appendChild(renderPreview(person, E));
 
     const name = document.createElement('span');
     name.className = 'name';
@@ -56,6 +57,13 @@ function renderFamilyList() {
     pal.textContent = '🎨'; pal.title = 'Palette';
     pal.addEventListener('click', () => openLookDialog(person, false));
     row.appendChild(pal);
+
+    if (hols.length) {   // costumes exist only while a holiday is on
+      const cs = document.createElement('button');
+      cs.textContent = '🎭'; cs.title = 'Costume';
+      cs.addEventListener('click', () => openCostumeDialog(person));
+      row.appendChild(cs);
+    }
 
     const del = document.createElement('button');
     del.textContent = '🗑'; del.title = 'Delete';

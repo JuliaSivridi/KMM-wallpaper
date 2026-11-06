@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Costumes</title>
+<link rel="stylesheet" href="css/look.css">
+<style>
+  html, body { margin: 0; background: #1a2244; color: #e8ecff; font: 600 13px/1.4 Consolas, "Courier New", monospace; }
+  .app { display: grid; grid-template-columns: 300px 1fr; gap: 16px; padding: 16px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 760px) { .app { grid-template-columns: 1fr; } }
+  .panel { background: #232d57; border: 2px solid #4a5680; padding: 12px; margin-bottom: 16px; }
+  h2 { font-size: 13px; margin: 0 0 8px; color: #9aa6d0; font-weight: 400; }
+  .btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .btns button { font: inherit; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 4px 8px; cursor: pointer; text-align: left; }
+  .btns button:hover { border-color: #8fa3e0; }
+  .btns button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+  table { border-collapse: collapse; } th { font-weight: 400; color: #9aa6d0; padding: 4px 10px; } td { padding: 6px 10px; text-align: center; vertical-align: bottom; }
+  th.age { text-align: right; }
+  figure { margin: 0; text-align: center; } figcaption { margin-top: 4px; color: #9aa6d0; font-weight: 400; }
+  .strip { display: grid; grid-template-columns: repeat(4, max-content); gap: 12px; margin-bottom: 14px; }
+  :root { --stage-a: #444f7c; --stage-b: #3d4870; }
+  .look-cv { background: repeating-conic-gradient(var(--stage-a) 0 25%, var(--stage-b) 0 50%) 0 0 / 16px 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <div class="panel"><div id="list"></div></div>
+    <div class="panel"><h2>Hair (to check how the hat hides it)</h2><div class="btns" id="hair"></div></div>
+  </div>
+  <div>
+    <div class="panel"><h2>Age and height</h2><div id="sizes"></div></div>
+    <div class="panel"><h2>Frames</h2><div id="frames"></div></div>
+  </div>
+</div>
+<script src="js/colors.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/costumes.js"></script>
+<script src="js/look_editor.js"></script>
+<script>
+const S = window.SWATCH, $ = id => document.getElementById(id);
+const P = { age: 'adult', height: 0, skin: S.skin[1], hair: S.hair[0], hairstyle: 'short', outfit: 'top-bottom', dressColor: S.cloth[0],
+  topColor: S.cloth[3], bottomColor: S.cloth[1], bottomKind: 'pants', sleeves: 'long', shoes: S.shoes[1], hat: 'none', hatColor: S.cloth[0] };
+let sel = { head: 'witch', body: '' };   // chosen head and body costumes (any holiday, they can be mixed here)
+const HOL = { halloween: '🎃 Halloween', newyear: '🎄 New Year' };
+const costumeKey = () => sel.head || sel.body ? sel.head + '|' + sel.body : null;
+
+function buttons(el, items, isOn, pick) {
+  el.innerHTML = '';
+  for (const [v, text] of items) { const b = document.createElement('button'); b.textContent = text; b.classList.toggle('on', isOn(v)); b.onclick = () => { pick(v); render(); }; el.appendChild(b); }
+}
+function buildList() {
+  const box = $('list'); box.innerHTML = '';
+  for (const [slot, slotName] of COSTUME_SLOTS) {
+    const sh = document.createElement('h2'); sh.textContent = slotName.toUpperCase(); sh.style.color = '#e8ecff'; box.appendChild(sh);
+    const none = document.createElement('div'); none.className = 'btns'; box.appendChild(none);
+    buttons(none, [['', '— none']], v => sel[slot] === v, v => { sel[slot] = v; });
+    for (const h in HOL) {
+      const list = COSTUMES.filter(c => c.holiday === h && c.slot === slot); if (!list.length) continue;
+      const t = document.createElement('h2'); t.textContent = HOL[h]; box.appendChild(t);
+      const d = document.createElement('div'); d.className = 'btns'; box.appendChild(d);
+      buttons(d, list.map(c => [c.id, c.icon + ' ' + c.name]), v => sel[slot] === v, v => { sel[slot] = v; });
+    }
+  }
+}
+function sprite(age, height) {
+  const spr = composeSprite({ ...P, age, height }, 'summer', costumeKey());
+  return { spr, pal: Object.assign(layerPalette(P), spr.pal || {}) };
+}
+function fig(cv, label) { const f = document.createElement('figure'); f.appendChild(cv); const c = document.createElement('figcaption'); c.textContent = label; f.appendChild(c); return f; }
+function render() {
+  buildList();
+  buttons($('hair'), LOOK_OPT.hairstyle.map(x => [x[0], x[1]]), v => v === P.hairstyle, v => { P.hairstyle = v; });
+  // table: age × height, figures aligned by the bottom
+  const ages = ['child', 'adult'], hs = [-1, 0, 1], all = ages.map(a => hs.map(h => sprite(a, h)));
+  const maxH = Math.max(...all.flat().map(o => o.spr.idle.length));
+  const table = document.createElement('table'), head = table.insertRow(); head.appendChild(document.createElement('th'));
+  hs.forEach(h => { const th = document.createElement('th'); th.textContent = (h > 0 ? '+' : '') + h; head.appendChild(th); });
+  ages.forEach((a, i) => {
+    const tr = table.insertRow(), th = document.createElement('th'); th.className = 'age'; th.textContent = LOOK_OPT.age.find(x => x[0] === a)[1]; tr.appendChild(th);
+    hs.forEach((h, j) => { const { spr, pal } = all[i][j], td = tr.insertCell(); td.appendChild(drawSpriteCanvas(spr.idle, pal, 6, 1, maxH - spr.idle.length));
+      const c = document.createElement('div'); c.style.cssText = 'color:#9aa6d0;font-weight:400;margin-top:4px'; c.textContent = spr.idle.length + ' px'; td.appendChild(c); });
+  });
+  $('sizes').innerHTML = ''; $('sizes').appendChild(table);
+  // frames: child and adult, standing / sitting / step 1 / step 2
+  $('frames').innerHTML = '';
+  for (const a of ages) {
+    const { spr, pal } = sprite(a, 0), H = Math.max(...['idle', 'sit', 'walkA', 'walkB'].map(k => spr[k].length)), strip = document.createElement('div'); strip.className = 'strip';
+    for (const [k, t] of [['idle', 'standing'], ['sit', 'sitting'], ['walkA', 'step 1'], ['walkB', 'step 2']]) strip.appendChild(fig(drawSpriteCanvas(spr[k], pal, 8, 1, H - spr[k].length), LOOK_OPT.age.find(x => x[0] === a)[1] + ', ' + t));
+    $('frames').appendChild(strip);
+  }
+}
+render();
+</script>
+</body>
+</html>

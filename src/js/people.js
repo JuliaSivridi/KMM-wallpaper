@@ -168,14 +168,15 @@ function updateAgent(a, dt, E) {
 
 // Sprites are assembled from layers (layers.js) and cached by look and season.
 const _spriteCache = new Map();
-function spriteOf(p, season) {
-  const sz = season === 'winter' ? 'winter' : 'summer', key = [p.age, p.height, p.hairstyle, p.outfit, p.bottomKind, p.sleeves, p.hat, sz].join('|');
-  let s = _spriteCache.get(key); if (!s) { s = composeSprite(p, sz); _spriteCache.set(key, s); }
+function spriteOf(p, season, cos) {
+  const sz = season === 'winter' ? 'winter' : 'summer', key = [p.age, p.height, p.hairstyle, p.outfit, p.bottomKind, p.sleeves, p.hat, sz, cos || ''].join('|');
+  let s = _spriteCache.get(key); if (!s) { s = composeSprite(p, sz, cos); _spriteCache.set(key, s); }
   return s;
 }
 function drawAgent(g, a, E) {
   if (a.hidden) return;
-  const set = spriteOf(a.person, E.season), pal = layerPalette(a.person);
+  const set = spriteOf(a.person, E.season, activeCostume(a.person, E)), pal = layerPalette(a.person);
+  if (set.pal) Object.assign(pal, set.pal);
   if (a.blink > 0) pal.E = pal.S;
   let rows = set.idle, lift = 0;
   if (a.mode === 'walk') rows = [set.walkA, set.idle, set.walkB, set.idle][Math.floor(a.anim / (isChild(a.person) ? 0.12 : 0.16)) % 4];

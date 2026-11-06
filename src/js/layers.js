@@ -128,27 +128,33 @@ function _frameRows(T, l, f) {
   return l.r.slice(0, T.h - T.n).concat(l[f] || l.r.slice(T.h - T.n));
 }
 function _over(base, rows) {
-  return base.map((b, i) => { let s = ''; for (let k = 0; k < b.length; k++) { const c = rows[i][k]; s += c !== '.' ? c : b[k]; } return s; });
+  return base.map((b, i) => { let s = ''; for (let k = 0; k < b.length; k++) { const c = rows[i][k]; s += c === '-' ? '.' : c !== '.' ? c : b[k]; } return s; });
 }
 
-function composeSprite(p, season) {
+function composeSprite(p, season, cosId) {
   let key = AGE_SET[p.age] || 'adult', dh = Math.max(-1, Math.min(1, +p.height || 0));   // character height: only −1, 0, +1 — one torso row
   if (key === 'kid' && dh > 0) { key = 'kidTall'; dh = 0; }   // kid +1 — a separate taller sprite, without the height adjustment
   const T = TPL[key], S = SETS[key];
-  const hatKey = (season === 'winter' && p.hat && p.hat !== 'none') ? (S.hat[p.hat] ? p.hat : Object.keys(S.hat)[0]) : null;
+  // holiday costume (js/costumes.js): its own headwear, drawn over the finished frames and independent of the season
+  const cp = cosId && typeof costumeParts === 'function' ? costumeParts(cosId) : null;   // { head, body } costumes
+  const cosHat = cp && cp.head ? costumeHead(cp.head, key) : null, cosBody = cp && cp.body ? costumeBody(cp.body, key) : null, full = !!(cp && cp.body && cp.body.full);
+  const hatKey = (!cosHat && !full && season === 'winter' && p.hat && p.hat !== 'none') ? (S.hat[p.hat] ? p.hat : Object.keys(S.hat)[0]) : null;
   const hairRows = S.hair[p.hairstyle];
   let hat = hatKey ? S.hat[hatKey] : null;
   if (hat && !hairRows && hat.bald) hat = hat.bald;   // no hair — a shorter hat
   const layers = [S.skin()];
   if (hairRows) {
     const hl = _lay(T, 0, hairRows);
-    if (hat) for (let i = 0; i < Math.min(hat.clip, T.h); i++) hl.r[i] = '.'.repeat(T.w);
+    const clip = cosHat ? cosHat.clip : hat ? hat.clip : 0;
+    for (let i = 0; i < Math.min(clip, T.h); i++) hl.r[i] = '.'.repeat(T.w);
     layers.push(hl);
   }
   if (p.outfit === 'dress') layers.push(S.top('D'), S.dress());
   else layers.push(S.top('T'), S.bottom(p.bottomKind || 'pants'));
   if (p.sleeves === 'short') layers.push(S.sleeves());
   layers.push(S.shoes());
+  if (full) layers.length = 0;   // a full costume replaces the whole figure (skin, hair, clothes)
+  if (cosBody) layers.push(_lay(T, 0, cosBody.rows, cosBody.A, cosBody.B, cosBody.S));   // body costume: '.' keeps what is under it, '-' erases
   if (hat) layers.push(_lay(T, 0, hat.rows));
   const adj = rows => {
     rows = rows.slice();
@@ -161,8 +167,15 @@ function composeSprite(p, season) {
     const key = f === 'walkA' ? 'A' : f === 'walkB' ? 'B' : f;
     let base = Array(f === 'sit' ? T.keep + T.sitN : T.h).fill('.'.repeat(T.w));
     for (const l of layers) base = _over(base, _frameRows(T, l, key));
-    out[f] = adj(base);
+    let rows = adj(base);
+    if (cosHat) {   // extra rows above the head, then the costume pixels over the top
+      rows = Array(cosHat.ex).fill('.'.repeat(T.w)).concat(rows);
+      cosHat.rows.forEach((r, i) => { r = r.padEnd(T.w, '.'); let s = ''; for (let k = 0; k < T.w; k++) s += r[k] !== '.' ? r[k] : rows[i][k]; rows[i] = s; });
+    }
+    out[f] = rows;
   }
+  // top — how many rows the costume added above the head; pal — letters of the costume (not enumerable, so Object.values(out) stays frames only)
+  Object.defineProperties(out, { top: { value: cosHat ? cosHat.ex : 0 }, pal: { value: cp ? Object.assign({}, cp.body && cp.body.pal, cp.head && cp.head.pal) : null } });
   return out;
 }
 

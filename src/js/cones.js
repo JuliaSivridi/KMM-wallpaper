@@ -118,7 +118,7 @@ function drawBucket(g, x, y, n) {
 function drawCone(g, c) { const x = Math.round(c.x), y = Math.round(c.y); R(g, x, y - 1, 2, 1, '#6e3f20'); R(g, x, y - 2, 1, 1, '#9a6034'); }
 // Bucket in the child's hand: hung on the front hand and a bit in front of it; with a crouching child it stands next to him on the ground.
 function drawKidBucket(g, a, set, rows, left, w) {
-  const tall = set.idle.length >= 11, crouch = rows === set.sit, yy = Math.round(a.y);
+  const tall = set.idle.length - (set.top || 0) >= 11, crouch = rows === set.sit, yy = Math.round(a.y);
   if (crouch) return drawBucket(g, a.face > 0 ? left + w : left - 3, yy, BUCKET.n);
   const colF = tall ? 7 : 4, handDy = tall ? -4 : -3, hx = a.face > 0 ? left + colF : left + w - 1 - colF;
   drawBucket(g, a.face > 0 ? hx : hx - 2, yy + handDy + 4, BUCKET.n);
