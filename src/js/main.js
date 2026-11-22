@@ -1,8 +1,9 @@
 function step(dt) {
   T += dt;
   const E = env();
-  const key = Math.floor(E.h * 120) + '|' + E.season + '|' + W + '|' + E.wx.cover + '|' + (E.hal ? E.hal.n : 0) + '|' + (E.ny ? 1 : 0);
-  if (key !== cacheKey) { cacheKey = key; buildSky(E); buildLand(E); }
+  updateSnowCover(dt, E);
+  const key = Math.floor(E.h * 120) + '|' + E.season + '|' + W + '|' + E.wx.cover + '|' + (E.hal ? E.hal.n : 0) + '|' + (E.ny ? 1 : 0) + '|' + E.snowQ;
+  if (key !== cacheKey) { cacheKey = key; buildSky(E); buildGround(E); }
   for (const a of FOLK) updateAgent(a, dt, E);
   updateSnowman(dt, E);
   updatePath(dt, E);

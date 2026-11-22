@@ -32,10 +32,11 @@ function env() {
   const d = smooth(sr - 0.7, sr + 0.7, h) * (1 - smooth(ss - 0.7, ss + 0.7, h));
   const tw = Math.max(0, 1 - Math.abs(h - sr) / 1.1, 1 - Math.abs(h - ss) / 1.1);
   const sm = WEATHER.lat < 0 ? (t.month + 6) % 12 : t.month;   // in the southern hemisphere the seasons are shifted half a year
-  const season = SEASON[sm], S = PAL[season];
+  const calSeason = SEASON[sm], wx = weatherNow(calSeason);   // the weather follows the calendar season (snow in summer turns into rain)
+  const sc = snowCoverState(sm), season = sc.lies ? 'winter' : calSeason, S = PAL[season];   // snow lies by the weather outside winter too (js/snowcover.js): then the scene is "winter"
   const awake = FOLK.some(a => isAwake(a.id, h));
   const fireOn = Math.max(15, Math.min(ss - 0.5, 20.5));
-  const wx = weatherNow(season), wet = (wx.kind === 'rain' || wx.kind === 'storm') && wx.int >= 0.45;
+  const wet = (wx.kind === 'rain' || wx.kind === 'storm') && wx.int >= 0.45;
   const fireLit = !wet && FOLK.some(a => isGrownUp(a.person) && isAwake(a.id, h)) && (h >= fireOn || h < 5);
   const aurora = Q.has('aurora') ? Q.get('aurora') === '1' : (Math.abs(WEATHER.lat) >= 55 && [8, 9, 10, 11, 0, 1, 2].includes(sm) && rng(t.nightKey)() < 0.35);
   let sun = null, moon = null;
@@ -45,7 +46,7 @@ function env() {
   const winter = season === 'winter';
   let top = mixHex(SKY.nTop, winter ? SKY.dTopW : SKY.dTop, d), hor = mixHex(SKY.nHor, winter ? SKY.dHorW : SKY.dHor, d);
   top = mixHex(top, SKY.tTop, tw * 0.45); hor = mixHex(hor, SKY.tHor, tw * 0.75);
-  const grey = clamp((weatherNow(season).cover - 55) / 45, 0, 1) * 0.75, gcol = mixHex('#141a28', '#9aa2b2', d);
+  const grey = clamp((wx.cover - 55) / 45, 0, 1) * 0.75, gcol = mixHex('#141a28', '#9aa2b2', d);
   top = mixHex(top, gcol, grey); hor = mixHex(hor, mixHex(gcol, '#c4cad4', d * 0.5), grey);
-  return { h, sr, ss, d, tw, season, S, awake, fireLit, aurora, sun, moon, top, hor, month: sm, wx, wet, hal: halloweenState(t), ny: newYearState(t) };
+  return { h, sr, ss, d, tw, season, calSeason, snowQ: sc.q, S, awake, fireLit, aurora, sun, moon, top, hor, month: sm, wx, wet, hal: halloweenState(t), ny: newYearState(t) };
 }

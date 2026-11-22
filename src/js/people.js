@@ -1,11 +1,10 @@
 const isChild = p => p.age === 'child';
 const isGrownUp = p => p.age === 'adult';
 
-function agent(person, speed) {
+function agent(person) {
   return {
     id: person.id,
     person,
-    speed,
     x: 0, y: 160, face: 1, mode: 'idle', path: [], timer: 1,
     hidden: false, anim: Math.random(), blinkT: rand(1, 5), blink: 0,
     act: null, next: null,
@@ -206,7 +205,7 @@ function drawAgent(g, a, E) {
 // Called after the family is loaded from a file.
 function rebuildFolk() {
   FOLK.length = 0;
-  for (const p of window.FAMILY) FOLK.push(agent(p, SPEED_BY_AGE[p.age] || 11));
+  for (const p of window.FAMILY) FOLK.push(agent(p));
   BY_ID = {};
   for (const a of FOLK) BY_ID[a.id] = a;
   placeFolk(env());

@@ -8,7 +8,7 @@ function newPersonTemplate() {
 function addPerson(p) {
   p.actions = personActions(p);
   window.FAMILY.push(p); window.FAMILY_BY_ID[p.id] = p;
-  const a = agent(p, SPEED_BY_AGE[p.age] || 11); FOLK.push(a); BY_ID[a.id] = a;
+  const a = agent(p); FOLK.push(a); BY_ID[a.id] = a;
   placeAgent(a, env());
   saveToStorage(); renderFamilyList();
 }

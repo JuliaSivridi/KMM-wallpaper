@@ -20,11 +20,11 @@ function showWx() {
 async function fetchWeather() {
   if (!WEATHER.enabled) return;
   try {
-    const v = 'weather_code,cloud_cover,wind_speed_10m,temperature_2m';
+    const v = 'weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,temperature_2m';
     const u = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER.lat}&longitude=${WEATHER.lon}&current=${v}&hourly=${v}&forecast_days=2&timezone=auto&wind_speed_unit=ms`;
     const j = await (await fetch(u)).json(), c = j.current;
     const pack = (o, i) => { const [kind, int, label] = decode(i === undefined ? o.weather_code : o.weather_code[i]); const g = k => i === undefined ? o[k] : o[k][i];
-      return { cover: g('cloud_cover'), kind, int, wind: g('wind_speed_10m'), temp: g('temperature_2m'), label }; };
+      return { cover: g('cloud_cover'), kind, int, wind: g('wind_speed_10m'), dir: g('wind_direction_10m'), temp: g('temperature_2m'), label }; };
     WX = pack(c);
     WXF = [WX];
     for (let n = 1; n <= 3; n++) {
@@ -34,6 +34,15 @@ async function fetchWeather() {
     }
     showWx();
   } catch (e) { WX_LABEL = 'Weather: no connection'; showWx(); }
+}
+// Which way the wind blows on the screen: −1…+1, positive — to the right. The frame looks south (the sun goes from left to right: east is on the left, west on the right),
+// so a west wind (from 270°) blows to the left, an east one (from 90°) to the right; a north or south wind gives a weak sideways drift.
+// Weather chosen by hand has no direction: to the right, as it always was. For testing: ?wind=270 (the direction the wind comes from, in degrees).
+function windDir(w) {
+  const dir = Q.has('wind') ? +Q.get('wind') : w && w.dir;
+  if (typeof dir !== 'number' || !isFinite(dir)) return 1;
+  const s = Math.sin(dir * Math.PI / 180);
+  return (s < 0 ? -1 : 1) * (0.2 + 0.8 * Math.abs(s));
 }
 function weatherNow(season) {
   let w = OV.wx ? WX_PRESET[OV.wx] : ((OV.fc && WXF[OV.fc]) || WX);

@@ -141,6 +141,44 @@ function buildLand(E) {
   const gd = lcx[LAST_LAYER];
   if (S.snow) for (const d of L.drifts) { R(gd, d.x + 2, d.y - 1, d.w - 4, 1, '#f6f9fc'); R(gd, d.x, d.y, d.w, 3, '#f6f9fc'); R(gd, d.x + 1, d.y + 3, d.w - 2, 1, S.shade); }
 }
+// Where the snow lies first: a fixed map of soft spots (large blobs with a little small detail, a bit flattened like the ground in perspective), every pixel has a number
+// from 0 to 1 and the numbers are spread evenly, so when a share k of the ground is white, exactly that share of pixels is. Built once per scene width.
+let _snowMask = null, _snowMaskW = 0;
+function snowMask() {
+  if (_snowMask && _snowMaskW === W) return _snowMask;
+  const r = rng(4417), n = W * H, v = new Float32Array(n), octs = [[16, 0.55], [8, 0.3], [4, 0.15]];
+  const grids = octs.map(([cell]) => { const gw = Math.ceil(W / cell) + 2, gh = Math.ceil(H * 1.6 / cell) + 2, g = new Float32Array(gw * gh); for (let i = 0; i < g.length; i++) g[i] = r(); return { cell, gw, g }; });
+  const sm = t => t * t * (3 - 2 * t);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    let s = 0;
+    octs.forEach(([cell, wt], i) => {
+      const G = grids[i], fx = x / cell, fy = y * 1.6 / cell, ix = Math.floor(fx), iy = Math.floor(fy), tx = sm(fx - ix), ty = sm(fy - iy), o = iy * G.gw + ix;
+      s += wt * ((G.g[o] * (1 - tx) + G.g[o + 1] * tx) * (1 - ty) + (G.g[o + G.gw] * (1 - tx) + G.g[o + G.gw + 1] * tx) * ty);
+    });
+    v[y * W + x] = s;
+  }
+  const idx = Uint32Array.from({ length: n }, (_, i) => i).sort((a, b) => v[a] - v[b]);
+  _snowMask = new Float32Array(n); _snowMaskW = W;
+  for (let i = 0; i < n; i++) _snowMask[idx[i]] = i / n;
+  return _snowMask;
+}
+// While snow arrives or leaves (E.snowQ from 1 to SNOWC_Q-1), both pictures of the ground are built, bare (the calendar season) and snowy (winter),
+// and mixed through the map above: snow lies in spots that grow and merge, on the ground and a little on the trees, boulders and bushes. Otherwise — one picture, as usual.
+let _landsBare = null;
+function buildGround(E) {
+  const q = E.snowQ;
+  if (!(q > 0 && q < SNOWC_Q)) { buildLand(E); return; }
+  buildLand({ ...E, season: E.calSeason, S: PAL[E.calSeason] });
+  _landsBare = _landsBare || lands.map(() => document.createElement('canvas'));
+  const bare = _landsBare.map((c, i) => { c.width = W; c.height = H; const x = c.getContext('2d'); x.drawImage(lands[i], 0, 0); return x.getImageData(0, 0, W, H).data; });
+  buildLand({ ...E, season: 'winter', S: PAL.winter });
+  const k = q / SNOWC_Q, M = snowMask();
+  lcx.forEach((g, i) => {
+    const img = g.getImageData(0, 0, W, H), B = img.data, A = bare[i];
+    for (let p = 0; p < W * H; p++) if (M[p] >= k) { const o = p * 4; B[o] = A[o]; B[o + 1] = A[o + 1]; B[o + 2] = A[o + 2]; B[o + 3] = A[o + 3]; }
+    g.putImageData(img, 0, 0);
+  });
+}
 const ZG = ['####', '..#.', '.#..', '####'];
 function glyphZ(g, x, y, c) { g.fillStyle = c; for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) if (ZG[j][i] === '#') g.fillRect(Math.round(x) + i, Math.round(y) + j, 1, 1); }
 function aurora(g, a) {

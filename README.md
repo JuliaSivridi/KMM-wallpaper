@@ -9,8 +9,10 @@ people, looks, daily routine. Plain JavaScript, no dependencies, wrapped in a [T
 ## Features
 
 - Day and night, sunrise and sunset computed from your latitude and longitude, polar day and night, northern lights.
-- Seasons by the calendar, real weather from [Open-Meteo](https://open-meteo.com) (rain, snow, fog, thunderstorms, wind).
+- Seasons by the calendar, real weather from [Open-Meteo](https://open-meteo.com) (rain, snow, fog, thunderstorms, wind with its direction: clouds, rain, snow and smoke go with the wind).
+- Snow by the weather: a real snowfall whitens the ground in spots even in April, October or November, and it stays until it melts.
 - A family of any size, built in an in-app constructor: age, height, hairstyle, clothes, colours, wake/sleep times, temper.
+- Holiday costumes for Halloween and New Year (🎭 in the family list): hats, ears, antlers, a ghost sheet, a skeleton, a witch robe, a pumpkin suit and more.
 - Things to do: sitting by the fire, picking berries, building a snowman, clearing the path, chopping firewood, collecting cones.
 - Hares, squirrels and birds; Halloween and New Year decorations.
 - Panels hidden in the top-left corner of the screen (hover to show them): time, weather, season, animals, holidays, coordinates, family, settings files.
@@ -78,8 +80,11 @@ Open `src/index.html` in any modern browser. Handy parameters for testing:
 | `&speed=120` | speeds time up (time-lapse) |
 | `&aurora=1` | turns the northern lights on |
 | `&animals=fast` | animals and birds every 4–10 seconds |
+| `&snow=1` / `&snow=0` | snow lies / bare ground (in April, October, November), e.g. `?month=11&snow=1` |
+| `&wind=270` | the direction the wind comes from, in degrees (270 — west) |
 
 `src/sprite-lab.html` is a separate page for drawing and checking character sprites.
+`src/costumes.html` is the same kind of page for the holiday costumes.
 
 ## How the Tauri part works
 
@@ -102,6 +107,7 @@ Tauri just embeds the `src/` folder into the exe (`frontendDist` in `src-tauri/t
 src/                  the wallpaper itself (HTML, CSS, JS)
   index.html
   sprite-lab.html     sprite showcase and constructor
+  costumes.html       costume showcase
   css/
   js/
 src-tauri/            Tauri shell (Rust)
