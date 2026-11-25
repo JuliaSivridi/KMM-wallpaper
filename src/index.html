@@ -17,16 +17,13 @@
   </div>
   <div class="sep"></div>
   <div class="row"><span class="lbl" title="Choose weather">🌦️</span>
-    <button class="ic on" data-w="auto" title="As it really is">🔄</button><button class="ic" data-w="clear" title="Clear">☀️</button><button class="ic" data-w="storm" title="Thunderstorm">⚡</button><button class="ic" data-w="rain" title="Rain">💧</button><button class="ic" data-w="snow" title="Snow">❄️</button><button class="ic" data-w="fog" title="Fog">🌫️</button>
+    <button class="ic on" data-w="auto" title="As it really is">🔄</button><button class="ic" data-w="clear" title="Clear">☀️</button><button class="ic" data-w="storm" title="Thunderstorm">⚡</button><button class="ic" data-w="rain" title="Rain">💧</button><button class="ic" data-w="snow" title="Snow">❄️</button><button class="ic" data-w="fog" title="Fog">🌫️</button><button class="ic gear" id="sky-gear" title="Sky and nature: puddles, rainbow, northern lights, shooting stars">⚙</button>
   </div>
   <div class="row"><span class="lbl" title="Season">📅</span>
     <button class="ic on" data-m="now" title="Now">🔄</button><button class="ic" data-m="0" title="Winter">⛄</button><button class="ic" data-m="4" title="Spring">🌱</button><button class="ic" data-m="6" title="Summer">🌻</button><button class="ic" data-m="9" title="Autumn">🍂</button><button class="ic gear" id="holidays-gear" title="Which holidays occur">⚙</button>
   </div>
-  <div class="row"><span class="lbl" title="Animals">🐿️</span>
-    <button class="ic on" data-f="0" title="Rarely">🐢</button><button class="ic" data-f="1" title="Often">🐇</button><button class="ic gear" id="fauna-animals" title="Which animals occur">⚙</button>
-  </div>
-  <div class="row"><span class="lbl" title="Birds">🐦</span>
-    <button class="ic on" data-b="0" title="Rarely">🐢</button><button class="ic" data-b="1" title="Often">🐇</button><button class="ic gear" id="fauna-birds" title="Which birds occur">⚙</button>
+  <div class="row pair"><span class="lbl" title="Animals">🐿️</span><button class="ic gear" id="fauna-animals" title="Which animals occur and how often">⚙</button>
+    <span class="lbl" title="Birds">🐦</span><button class="ic gear" id="fauna-birds" title="Which birds occur and how often">⚙</button>
   </div>
   <div class="sep"></div>
   <div class="row"><span class="lbl" title="Where the forest lives: latitude and longitude">📍</span>
@@ -74,8 +71,10 @@
 <script src="js/layers.js"></script>
 <script src="js/costumes.js"></script>
 <script src="js/util.js"></script>
+<script src="js/events.js"></script>
 <script src="js/palette.js"></script>
 <script src="js/time.js"></script>
+<script src="js/moon.js"></script>
 <script src="js/weather.js"></script>
 <script src="js/snowcover.js"></script>
 <script src="js/layout.js"></script>
@@ -88,6 +87,9 @@
 <script src="js/cones.js"></script>
 <script src="js/path.js"></script>
 <script src="js/tracks.js"></script>
+<script src="js/puddles.js"></script>
+<script src="js/rainbow.js"></script>
+<script src="js/stars.js"></script>
 <script src="js/holidays.js"></script>
 <script src="js/render.js"></script>
 <script src="js/storage.js"></script>
@@ -101,6 +103,7 @@
 <script src="js/ui_actions.js"></script>
 <script src="js/ui_fauna.js"></script>
 <script src="js/ui_holidays.js"></script>
+<script src="js/ui_sky.js"></script>
 <script src="js/gsettings.js"></script>
 <script src="js/ui_gsettings.js"></script>
 <script src="js/main.js"></script>

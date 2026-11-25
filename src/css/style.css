@@ -105,3 +105,25 @@ canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated
 #costume-panel .cp-side .sp-ft { margin-top: auto; padding-top: 10px; }
 #costume-panel .cp-grp { margin-bottom: 10px; }
 #costume-panel .cp-slot { margin: 6px 0 4px; opacity: .7; font-weight: 400; }
+/* "Sky and nature" panel (⚙ in the weather row) */
+#sky-panel { width: 340px; max-width: calc(100vw - 32px); }
+#sky-panel .sky-sub { margin: 12px 0 6px; }
+#sky-panel .mt { margin-bottom: 6px; }
+#sky-panel .showers { margin-left: 14px; }
+/* Animals and birds: one row of the scene panel, icon + gear twice, side by side */
+#ui .row.pair button.gear { margin-left: 0; }
+/* "Animals" / "Birds" panels: a list, every species on its own row, four aligned level buttons (off / rare / normal / often) */
+#fauna-panel { width: 340px; max-width: calc(100vw - 32px); }
+#fauna-panel .lv-legend { margin: -4px 0 10px; font-weight: 400; opacity: .6; }
+.lv-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.lv-row .nm { flex: 1; min-width: 0; }
+.lv-btns { display: grid; grid-template-columns: repeat(4, 34px); gap: 4px; }
+.lv-btns button { font: inherit; font-size: 15px; line-height: 1; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 4px 0; cursor: pointer; }
+.lv-btns button:hover { border-color: #8fa3e0; }
+.lv-btns button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+/* "Holidays" panel: a button per holiday, its decorations indented under it (a column); the ghosts row has level buttons */
+#holidays-panel { width: 340px; max-width: calc(100vw - 32px); }
+#holidays-panel .hol-grp { margin-bottom: 12px; }
+#holidays-panel .hol-sub { margin: 6px 0 0 14px; }
+#holidays-panel .hol-sub.off { opacity: .45; }
+#holidays-panel .hol-sub .lv-row { flex: 1 0 100%; margin: 4px 0 0; }   /* the ghosts: a row of their own */

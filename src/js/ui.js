@@ -30,12 +30,6 @@ uiAll('button[data-fc]').forEach(b => b.addEventListener('click', () => {
   syncWeatherBtns();
 }));
 
-// animals and birds
-const aniBtns = uiAll('button[data-f]'), birdBtns = uiAll('button[data-b]');
-const syncFast = () => { aniBtns.forEach(b => b.classList.toggle('on', (b.dataset.f === '1') === FAST_ANI)); birdBtns.forEach(b => b.classList.toggle('on', (b.dataset.b === '1') === FAST_BIRD)); };
-aniBtns.forEach(b => b.addEventListener('click', () => { FAST_ANI = b.dataset.f === '1'; aniT = FAST_ANI ? Math.min(aniT, 2) : rand(300, 600); syncFast(); }));
-birdBtns.forEach(b => b.addEventListener('click', () => { FAST_BIRD = b.dataset.b === '1'; birdT = FAST_BIRD ? Math.min(birdT, 2) : rand(300, 600); syncFast(); }));
-syncFast();
 setInterval(() => { if (OV.hour === null) { const h = clock().h; hr.value = h; hl.textContent = fmt(h); } }, 1000);
 
 // weather coordinates: saved in the browser settings, and weather is requested right after input
@@ -69,6 +63,6 @@ latEl.addEventListener('change', applyPos); lonEl.addEventListener('change', app
 function syncTopPanel() {
   uiOn(uiAll('button[data-m]'), b => b.dataset.m === 'now' ? OV.month === null : +b.dataset.m === OV.month);
   const h = OV.hour === null ? clock().h : OV.hour; hr.value = h; hl.textContent = fmt(h); syncTimeBtn();
-  syncWeatherBtns(); syncFast();
+  syncWeatherBtns();
   latEl.value = WEATHER.lat; lonEl.value = WEATHER.lon;
 }

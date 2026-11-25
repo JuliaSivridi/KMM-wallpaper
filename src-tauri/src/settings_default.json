@@ -5,6 +5,7 @@
   "season": "now",
   "holidays": "all",
   "actions": "all",
-  "animals": { "rate": "slow", "species": "all" },
-  "birds": { "rate": "slow", "species": "all" }
+  "sky": "all",
+  "animals": { "species": "all" },
+  "birds": { "species": "all" }
 }

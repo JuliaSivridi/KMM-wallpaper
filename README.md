@@ -9,13 +9,15 @@ people, looks, daily routine. Plain JavaScript, no dependencies, wrapped in a [T
 ## Features
 
 - Day and night, sunrise and sunset computed from your latitude and longitude, polar day and night, northern lights.
-- Seasons by the calendar, real weather from [Open-Meteo](https://open-meteo.com) (rain, snow, fog, thunderstorms, wind with its direction: clouds, rain, snow and smoke go with the wind).
+- Moon phases by the date (rises later every day, a crescent, a half, a full disc); the Sun and the Moon follow a real seasonal path: the Moon is high on winter nights, and a low Sun or Moon hides behind the tall forest.
+- A real starry sky: the stars stand where they really are for your place and time and turn during the night (Orion in winter, the Summer Triangle in summer); shooting stars and seven meteor showers (Perseids, Geminids and others) that fly away from their radiants.
+- Seasons by the calendar, real weather from [Open-Meteo](https://open-meteo.com) (rain, snow, fog, thunderstorms, wind with its direction: clouds, rain, snow and smoke go with the wind), puddles after rain that mirror the sky, and sometimes a rainbow.
 - Snow by the weather: a real snowfall whitens the ground in spots even in April, October or November, and it stays until it melts.
 - A family of any size, built in an in-app constructor: age, height, hairstyle, clothes, colours, wake/sleep times, temper.
 - Holiday costumes for Halloween and New Year (🎭 in the family list): hats, ears, antlers, a ghost sheet, a skeleton, a witch robe, a pumpkin suit and more.
 - Things to do: sitting by the fire, picking berries, building a snowman, clearing the path, chopping firewood, collecting cones.
-- Hares, squirrels and birds; Halloween and New Year decorations.
-- Panels hidden in the top-left corner of the screen (hover to show them): time, weather, season, animals, holidays, coordinates, family, settings files.
+- Hares, squirrels and birds, each species with its own frequency (off / rare / normal / often); Halloween and New Year decorations, each switchable separately (the ghosts have frequency levels too).
+- Panels hidden in the top-left corner of the screen (hover to show them): time, weather, sky and nature switches, season, animals, holidays, coordinates, family, settings files.
 
 The full description of the game (what it does and how it is built) is in the specification:
 
@@ -79,9 +81,15 @@ Open `src/index.html` in any modern browser. Handy parameters for testing:
 | `&day=25` | fixes the day of the month (for holidays, together with `&month=`) |
 | `&speed=120` | speeds time up (time-lapse) |
 | `&aurora=1` | turns the northern lights on |
-| `&animals=fast` | animals and birds every 4–10 seconds |
+| `&animals=fast` | all random events (animals, birds, ghosts, shooting stars) about every 7 seconds; `&events=fast` does the same |
+| `&ghosts=fast`, `&meteors=fast`, `&hare=fast` | speeds up one event (the id of any event) |
 | `&snow=1` / `&snow=0` | snow lies / bare ground (in April, October, November), e.g. `?month=11&snow=1` |
 | `&wind=270` | the direction the wind comes from, in degrees (270 — west) |
+| `&puddles=1` / `&puddles=0` | puddles at full size / no puddles |
+| `&rainbow=1` / `&rainbow=0` | a rainbow in the daytime (e.g. `?hour=8`) / never |
+| `&moon=0.5` | the Moon's phase (0 — new, 0.5 — full); e.g. `?moon=0.5&hour=23` |
+
+The parameters work only in the browser; the app has no address bar.
 
 `src/sprite-lab.html` is a separate page for drawing and checking character sprites.
 `src/costumes.html` is the same kind of page for the holiday costumes.

@@ -52,7 +52,8 @@ function layout() {
   L.shrooms = []; for (let i = 0; i < 8; i++) L.shrooms.push({ x: Math.floor(W * 0.45 + r() * W * 0.52), y: 154 + Math.floor(r() * 18), red: r() < 0.5 });
   L.tufts = []; for (let x = 0; x < W; x += 2 + Math.floor(r() * 4)) { const bl = [], n = 2 + Math.floor(r() * 3); for (let k = 0; k < n; k++) bl.push({ dx: k - 1, h: 3 + Math.floor(r() * 4), c: r() < 0.5 }); L.tufts.push({ x, y: 171 + Math.floor(r() * 9), bl, dry: r() < 0.25 }); }
   L.drifts = []; for (let i = 0; i < 6; i++) L.drifts.push({ x: Math.floor(r() * W), y: 174 + Math.floor(r() * 4), w: 14 + Math.floor(r() * 24) });
-  L.stars = []; for (let i = 0; i < W * 0.25; i++) L.stars.push({ x: Math.floor(r() * W), y: Math.floor(r() * 95), p: r() * 6.28, s: 0.5 + r() * 2, b: r() < 0.12 });
+  for (let i = 0; i < W * 0.25; i++) for (let k = 0; k < 5; k++) r();   // the former random stars (now real ones, js/stars.js): the loop only advances random() so the clouds stay where they were
   L.clouds = []; for (let i = 0; i < 12; i++) { const bl = [], n = 3 + Math.floor(r() * 3); for (let k = 0; k < n; k++) bl.push({ dx: k * 6 - n * 3 + Math.floor(r() * 4), dy: Math.floor(r() * 3) - 1, r: 3 + Math.floor(r() * 4) }); L.clouds.push({ x: r() * W, y: 14 + Math.floor(r() * 40), v: 0.6 + r() * 1.2, bl }); }
   layoutHolidays();
+  layoutPuddles();
 }

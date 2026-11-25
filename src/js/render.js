@@ -206,7 +206,7 @@ function shade(s, E) {
 // Everything drawn over the layer cache: each object has a base y (which determines the layer and order), or an over flag (over the whole segment: seg — segment number,
 // last by default), or l — an explicit layer (footprints on the ground).
 function sceneItems(E) {
-  return [...FOLK.map(a => ({ y: a.y, x: a.x, d: c => drawAgent(c, a, E) })), ...aniItems(E), ...snowItems(), ...woodItems(E.S), ...coneItems(), ...holidayItems(E), ...pathItems(E),
+  return [...FOLK.map(a => ({ y: a.y, x: a.x, d: c => drawAgent(c, a, E) })), ...aniItems(E), ...snowItems(), ...woodItems(E.S), ...coneItems(), ...holidayItems(E), ...pathItems(E), ...puddleItems(E),
     { over: true, seg: 0, y: 0, x: 0, d: c => drawSmoke(c) }];
 }
 function drawSmoke(s) { for (const p of P.smoke) { const age = 1 - p.life / p.max, sz = age > 0.4 ? 2 : 1; R(s, p.x, p.y, sz, sz, rgba('#cfd2da', (p.life / p.max) * 0.45)); } }
@@ -218,7 +218,7 @@ function drawForeground(sf, E) {
   const wint = E.season === 'winter', sw0 = E.S;
   for (const u of L.tufts) {
     if (wint && !u.dry) continue;
-    if (E.hal && Math.abs(u.x - L.skeleton.x) <= 5) continue;   // under the skeleton (Halloween) no grass grows, otherwise it covers its legs
+    if (E.hal && decorOn('halloween', 'skeleton') && Math.abs(u.x - L.skeleton.x) <= 5) continue;   // under the skeleton (Halloween) no grass grows, otherwise it covers its legs
     const sw = Math.round(Math.sin(T * (1.6 + E.wx.wind * 0.3) + u.x * 0.35) * (0.8 + Math.min(1.2, E.wx.wind / 6)));
     for (const b of u.bl) { const c = b.c ? sw0.grassA : sw0.grassB; R(sf, u.x + b.dx, u.y - b.h + 1, 1, b.h - 1, c); R(sf, u.x + b.dx + sw, u.y - b.h, 1, 1, c); }
   }
@@ -233,22 +233,20 @@ function draw(E) {
   g.globalCompositeOperation = 'source-over';
   g.drawImage(sky, 0, 0);
   const sa = Math.pow(1 - E.d, 2) * (1 - E.wx.cover / 100);
-  if (sa > 0.02) for (const s of L.stars) { const a = sa * (0.55 + 0.45 * Math.sin(T * s.s + s.p)); R(g, s.x, s.y, 1, 1, rgba('#ffffff', a)); if (s.b && a > 0.5) { R(g, s.x - 1, s.y, 1, 1, rgba('#ffffff', a * 0.4)); R(g, s.x + 1, s.y, 1, 1, rgba('#ffffff', a * 0.4)); } }
+  if (sa > 0.02) drawStars(g, E, sa);   // real stars (js/stars.js)
+  drawMeteors(g);
   if (E.aurora && E.d < 0.35 && E.wx.cover < 70) aurora(g, (1 - E.d / 0.35) * (1 - E.wx.cover / 70));
   if (E.sun && E.wx.cover < 90) {
     const s = E.sun, c = mixHex('#fff3c4', '#ff9d5c', clamp(1 - Math.sin(Math.PI * s.p) * 2.5, 0, 1));
     g.globalCompositeOperation = 'lighter'; disc(g, s.x, s.y, 9, rgba(c, 0.12)); disc(g, s.x, s.y, 6, rgba(c, 0.15)); g.globalCompositeOperation = 'source-over';
     disc(g, s.x, s.y, 4, c);
   }
-  if (E.moon && E.d < 0.7 && E.wx.cover < 90) {
-    const m = E.moon, a = 1 - E.d / 0.7;
-    g.globalCompositeOperation = 'lighter'; disc(g, m.x, m.y, 8, rgba('#c9d6ff', 0.07 * a)); g.globalCompositeOperation = 'source-over';
-    disc(g, m.x, m.y, 4, rgba('#eef2fa', a)); R(g, m.x + 1, m.y - 2, 1, 1, rgba('#c7cfe0', a)); R(g, m.x - 2, m.y, 2, 1, rgba('#c7cfe0', a)); R(g, m.x + 1, m.y + 2, 1, 1, rgba('#c7cfe0', a));
-  }
+  if (E.wx.cover < 90) drawMoon(g, E);
   const cov = E.wx.cover / 100, heavy = clamp((cov - 0.5) * 2, 0, 1);
   const cb = mixHex(mixHex(mixHex('#28304d', '#f3f5fa', E.d), '#f2a27e', E.tw * 0.55), mixHex('#1c2232', '#8f97a8', E.d), heavy * 0.7), cs = mixHex(cb, '#5b657c', 0.35);
   const nClouds = Math.round(cov * L.clouds.length);
   for (const c of L.clouds.slice(0, nClouds)) { for (const b of c.bl) disc(g, c.x + b.dx, c.y + b.dy + 1, b.r, cs); for (const b of c.bl) disc(g, c.x + b.dx, c.y + b.dy, b.r, cb); }
+  drawRainbow(g, E);
 
   // scene (everything dimmed at night): segments separated by glowing objects (BREAKS)
   const byLayer = lands.map(() => []), over = [], byY = (p, q) => p.y - q.y || p.x - q.x, lastSeg = sgx.length - 1;

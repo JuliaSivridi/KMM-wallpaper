@@ -9,7 +9,7 @@ function clock() {
   if (Q.has('day')) day = clamp(+Q.get('day') | 0, 1, 31);
   if (OV.hour !== null) h = OV.hour;
   const n = new Date(ms - 12 * 3.6e6);
-  return { h, month, day, ovMonth: OV.month, nightKey: n.getFullYear() * 1000 + n.getMonth() * 40 + n.getDate() };
+  return { h, month, day, year: d.getFullYear(), ovMonth: OV.month, nightKey: n.getFullYear() * 1000 + n.getMonth() * 40 + n.getDate() };
 }
 // Sunrise and sunset by the latitude and longitude from WEATHER (NOAA formulas), in the computer's local time.
 function sunTimes(m, day) {
@@ -38,11 +38,10 @@ function env() {
   const fireOn = Math.max(15, Math.min(ss - 0.5, 20.5));
   const wet = (wx.kind === 'rain' || wx.kind === 'storm') && wx.int >= 0.45;
   const fireLit = !wet && FOLK.some(a => isGrownUp(a.person) && isAwake(a.id, h)) && (h >= fireOn || h < 5);
-  const aurora = Q.has('aurora') ? Q.get('aurora') === '1' : (Math.abs(WEATHER.lat) >= 55 && [8, 9, 10, 11, 0, 1, 2].includes(sm) && rng(t.nightKey)() < 0.35);
+  const aurora = skyOn('aurora') && (Q.has('aurora') ? Q.get('aurora') === '1' : (Math.abs(WEATHER.lat) >= 55 && [8, 9, 10, 11, 0, 1, 2].includes(sm) && rng(t.nightKey)() < 0.35));
   let sun = null, moon = null;
-  if (h > sr && h < ss) { const p = (h - sr) / (ss - sr), alt = 20 + 70 * clamp((ss - sr - 6) / 13, 0, 1); sun = { x: W * 0.06 + p * W * 0.88, y: 118 - Math.sin(Math.PI * p) * alt, p }; }
-  const nl = sr + 24 - ss, q = ((h - ss + 24) % 24) / nl;
-  if (q > 0.02 && q < 0.98) moon = { x: W * 0.08 + q * W * 0.84, y: 112 - Math.sin(Math.PI * q) * 55 };
+  if (h > sr && h < ss) { const p = (h - sr) / (ss - sr); sun = { x: W * 0.06 + p * W * 0.88, y: arcY(p, skyAltPx(sunDecl(sunLon(t))), W * 0.44), p }; }
+  moon = moonNow(t, sr, ss);
   const winter = season === 'winter';
   let top = mixHex(SKY.nTop, winter ? SKY.dTopW : SKY.dTop, d), hor = mixHex(SKY.nHor, winter ? SKY.dHorW : SKY.dHor, d);
   top = mixHex(top, SKY.tTop, tw * 0.45); hor = mixHex(hor, SKY.tHor, tw * 0.75);

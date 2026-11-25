@@ -4,12 +4,22 @@
 // between trees in the middle of the scene a big round web, down which a little spider descends now and then. The places for all of this are computed once during scene layout (layoutHolidays) and do not change.
 // In the bottom-left corner stands a skeleton decoration (in the evening its skull's eyes glow), and at dusk and at night in the distance between trees translucent ghosts occasionally fly past, Pac-Man style.
 // Which holidays exist at all (the ⚙ panel in the season row). A disabled one never comes; the global switch is stored in the browser.
-const HOLIDAYS = [{ id: 'halloween', icon: '🎃', name: 'Halloween', when: '15–31 October' }, { id: 'newyear', icon: '🎄', name: 'New Year', when: '15 December – 14 January' }];
+// decor — the decorations of the holiday, each can be switched off separately in the panel (key "<holiday>.<decoration>" in HOLIDAY_OFF); event — the decoration is a random event of the registry
+// (js/events.js) and has frequency levels instead of a switch.
+const HOLIDAYS = [
+  { id: 'halloween', icon: '🎃', name: 'Halloween', when: '15–31 October', decor: [
+    { id: 'skeleton', icon: '💀', name: 'Skeleton' }, { id: 'lantern', icon: '🕯️', name: "Jack-o'-lantern" }, { id: 'pumpkins', icon: '🎃', name: 'Pumpkins' },
+    { id: 'web', icon: '🕸️', name: 'Web and spider' }, { id: 'garlands', icon: '💡', name: 'Garlands' }, { id: 'ghosts', icon: '👻', name: 'Ghosts', event: 'ghosts' }] },
+  { id: 'newyear', icon: '🎄', name: 'New Year', when: '15 December – 14 January', decor: [
+    { id: 'tree', icon: '🎄', name: 'Christmas tree' }, { id: 'garlands', icon: '💡', name: 'Garlands' }] },
+];
 const HOLIDAY_KEY = 'forest.holidays.v1';
-let HOLIDAY_OFF = {};   // { halloween: true } — this holiday is absent
+let HOLIDAY_OFF = {};   // { halloween: true } — the whole holiday is absent; { 'halloween.pumpkins': true } — only that decoration is absent (the ghosts are an event, their level is in js/events.js)
 try { const o = JSON.parse(localStorage.getItem(HOLIDAY_KEY) || 'null'); if (o && typeof o === 'object') HOLIDAY_OFF = o; } catch (e) {}
 const holidayOn = id => !HOLIDAY_OFF[id];
-function saveHolidayOff() { try { localStorage.setItem(HOLIDAY_KEY, JSON.stringify(HOLIDAY_OFF)); } catch (e) {} }
+let HOLIDAY_VER = 0;   // grows on every change of the switches: the scene cache (garlands, pumpkins, web) is rebuilt
+const decorOn = (h, id) => !HOLIDAY_OFF[h + '.' + id];   // is the decoration of a running holiday switched on
+function saveHolidayOff() { HOLIDAY_VER++; if (L && L.trees) layoutHalGarlands(); try { localStorage.setItem(HOLIDAY_KEY, JSON.stringify(HOLIDAY_OFF)); } catch (e) {} }
 const HAL_FIRST = 15, HAL_PUMPKINS = 9;
 // State for today (t is the result of clock()) or null if it is not Halloween.
 function halloweenState(t) {
@@ -54,15 +64,22 @@ function layoutHolidays() {
     L.web = { xa: c.xa, xb: c.xb, cx: Math.round((c.xa + c.xb) / 2), cy: Math.min(c.a.base, c.b.base) - 26, R, dmax: R + 8, base: Math.max(c.a.base, c.b.base) + 0.05 };
     break;
   }
+  layoutHalGarlands();
+  layoutNewYear();
+}
+
+// Halloween garlands. Computed after the web, and again every time the switches change (saveHolidayOff): web on — they go around it, web off — they use all the free space.
+function layoutHalGarlands() {
   // garlands between neighbouring trees of the four front rows (up to five, as at New Year): a sagging wire, bulbs 2×2 every 6 px.
   // Pairs of trees 33…60 px apart (at least five bulbs) on the same line or on neighbouring ones; picked randomly, but short ones more often than long.
-  // Garlands don't overlap each other or the web: first 24 px apart, if there aren't enough spots, 10, then 4.
+  // Garlands don't overlap each other or the web (if it is switched on): first 24 px apart, if there aren't enough spots, 10, then 4.
+  const r = rng(7301), web = L.web && decorOn('halloween', 'web') ? L.web : null;   // with the web on, the garlands share the rest of the space; with it off — all of it
   L.garlands = [];
   const cand = L.trees.filter(t => t.dep > 0.6 && t.x > L.cabin.x + 34 && t.x < W - 8).sort((a, b) => a.x - b.x), pairs = [];
   for (let i = 0; i < cand.length; i++) for (let j = i + 1; j < cand.length; j++) {
     const d = cand[j].x - cand[i].x; if (d > 60) break;
     if (d < 33 || Math.abs(cand[i].base - cand[j].base) > 7) continue;
-    if (L.web && cand[i].x + 3 < L.web.xb + 8 && cand[j].x > L.web.xa - 8) continue;   // no garlands near the web
+    if (web && cand[i].x + 3 < web.xb + 8 && cand[j].x > web.xa - 8) continue;   // no garlands near the web
     pairs.push([cand[i], cand[j]]);
   }
   pairs.sort((p, q) => (p[1].x - p[0].x) - (q[1].x - q[0].x));
@@ -78,7 +95,6 @@ function layoutHolidays() {
       L.garlands.push(G);
     }
   }
-  layoutNewYear();
 }
 
 /* ---------- drawing ---------- */
@@ -141,14 +157,20 @@ function drawGarlandWire(g, G) {
 function halLand(items, E) {
   nyLand(items, E);
   if (!E.hal) return;
-  for (let i = 0; i < E.hal.n; i++) { const p = L.pumpkins[i]; if (p) items.push([p.y + 0.3, c => drawPumpkin(c, p, E.S)]); }
-  if (L.web) items.push([L.web.base, c => drawWeb(c, L.web)]);
-  for (const G of L.garlands) items.push([G.base, c => drawGarlandWire(c, G)]);
+  if (decorOn('halloween', 'pumpkins')) for (let i = 0; i < E.hal.n; i++) { const p = L.pumpkins[i]; if (p) items.push([p.y + 0.3, c => drawPumpkin(c, p, E.S)]); }
+  if (L.web && decorOn('halloween', 'web')) items.push([L.web.base, c => drawWeb(c, L.web)]);
+  if (decorOn('halloween', 'garlands')) for (const G of L.garlands) items.push([G.base, c => drawGarlandWire(c, G)]);
 }
 // Jack-o'-lantern and spider in the depth-sorted object list (the spider sits at the web's depth, right after it).
-const holidayItems = E => nyItems(E).concat(!E.hal ? [] : [{ y: L.lantern.y, x: L.lantern.x, d: c => drawLantern(c) }, { y: L.skeleton.y, x: L.skeleton.x, d: c => drawSkeleton(c) }]
-  .concat(L.web ? [{ y: L.web.base + 0.01, x: L.web.cx, d: c => drawSpider(c) }] : [])
-  .concat(GHOSTS.map(o => ({ y: o.y, x: o.x, d: c => drawGhost(c, o, E) }))));   // a ghost stands at the depth of the far forest and hides behind nearer trees
+function holidayItems(E) {
+  const o = nyItems(E);
+  if (!E.hal) return o;
+  if (decorOn('halloween', 'lantern')) o.push({ y: L.lantern.y, x: L.lantern.x, d: c => drawLantern(c) });
+  if (decorOn('halloween', 'skeleton')) o.push({ y: L.skeleton.y, x: L.skeleton.x, d: c => drawSkeleton(c) });
+  if (L.web && decorOn('halloween', 'web')) o.push({ y: L.web.base + 0.01, x: L.web.cx, d: c => drawSpider(c) });
+  for (const g of GHOSTS) o.push({ y: g.y, x: g.x, d: c => drawGhost(c, g, E) });   // a ghost stands at the depth of the far forest and hides behind nearer trees
+  return o;
+}
 
 // Skeleton 7×13, facing the viewer; E — eye sockets (dark by day, glowing in the evening, see halBulbs), k — dark gaps between bones.
 const SKEL = ['..bbbbb..','.bbbbbbb.','.bEEbEEb.','.bbEbEbb.','..bbbbb..','...bkb...','....b....','..bbbbb..','.b..b..b.','.b.bbb.b.','.b..b..b.','.b.bbb.b.','....b....','..bbbbb..','..b...b..','..b...b..','.bb...bb.',];
@@ -164,7 +186,6 @@ function drawSkeleton(g) {
 // Pac-Man ghosts (Blinky, Pinky, Inky, Clyde), translucent. At dusk and at night every 1–3 minutes (with ?animals=fast — every 4–10 seconds)
 // one ghost flies in from the edge of the scene, sometimes a chain of 2–4. They float in the distance (at the far-forest depth) and slip behind nearby trunks.
 const GHOSTS = [];
-let _ghostT = 8;
 const GHOST_COL = ['#ff2a2a', '#ffb0f0', '#35e8ff', '#ffb040'];
 const GHOST_SPR = [
   ['.GGGGG.', 'GGGGGGG', 'GWWGWWG', 'GWBGWBG', 'GGGGGGG', 'GGGGGGG', 'GGGGGGG', 'GG.G.GG'],
@@ -176,12 +197,12 @@ function spawnGhosts() {
   for (let i = 0; i < n; i++) GHOSTS.push({ x: (dir > 0 ? -8 : W + 8) - dir * i * 13, y: y + i * 0.01, alt: alt + rand(-1.5, 1.5), v, dir, c: cols[i], ph: rand(0, 6) });
 }
 function updateGhosts(dt, E) {
-  if (!E.hal) { GHOSTS.length = 0; _ghostT = 8; return; }
-  _ghostT -= dt;
-  if (_ghostT <= 0) { _ghostT = FAST_ANI ? rand(4, 10) : rand(60, 180); if (!E.wet && E.d < 0.7) spawnGhosts(); }
+  if (!E.hal || evLevel('ghosts') === 'off') { GHOSTS.length = 0; return; }
   for (const o of GHOSTS) o.x += o.dir * o.v * dt;
   for (let i = GHOSTS.length - 1; i >= 0; i--) { const o = GHOSTS[i]; if ((o.dir > 0 && o.x > W + 12) || (o.dir < 0 && o.x < -12)) GHOSTS.splice(i, 1); }
 }
+// The ghosts are an event of the registry (js/events.js): only while Halloween lasts, in the dusk and at night, without a downpour; every 1–3 minutes, the first one soon after the start.
+defineEvent({ id: 'ghosts', group: 'holidays', icon: '👻', name: 'Ghosts', gap: 120, spread: [0.5, 1.5], first: 8, on: E => !!E.hal, can: E => !E.wet && E.d < 0.7, run: spawnGhosts });
 function drawGhost(g, o, E) {
   const rows = GHOST_SPR[Math.floor(T * 3 + o.ph) % 2], hz = hazeOf(clamp((o.y - 126) / 26, 0, 1)) * 0.5;
   const pal = { G: mixHex(GHOST_COL[o.c], E.S.hillNear, hz), W: '#ffffff', B: '#2a2ae0' };
@@ -198,21 +219,21 @@ const HAL_COL = ['#ff8a1e', '#a35cff'];
 function halGlow(g, E) {
   nyGlow(g, E);
   const k = E.hal ? halLit(E) : 0; if (k <= 0) return;
-  for (const G of L.garlands) for (const b of G.bulbs) disc(g, b.x + 1, b.y + 1, 3, rgba(HAL_COL[b.c], 0.07 * k * (0.7 + 0.3 * Math.sin(T * 2.4 + b.ph))));
-  const f = 0.8 + Math.random() * 0.2, q = L.lantern;
-  disc(g, q.x, q.y - 3, 10, rgba('#ff9a2a', 0.05 * k * f)); disc(g, q.x, q.y - 3, 5, rgba('#ffb040', 0.09 * k * f));
-  const s = L.skeleton, f2 = 0.8 + Math.random() * 0.2;   // skull eyes
-  disc(g, s.x, s.y - 10, 7, rgba('#ff9a2a', 0.04 * k * f2)); disc(g, s.x, s.y - 10, 4, rgba('#ffb040', 0.07 * k * f2));
+  if (decorOn('halloween', 'garlands')) for (const G of L.garlands) for (const b of G.bulbs) disc(g, b.x + 1, b.y + 1, 3, rgba(HAL_COL[b.c], 0.07 * k * (0.7 + 0.3 * Math.sin(T * 2.4 + b.ph))));
+  if (decorOn('halloween', 'lantern')) { const f = 0.8 + Math.random() * 0.2, q = L.lantern;
+    disc(g, q.x, q.y - 3, 10, rgba('#ff9a2a', 0.05 * k * f)); disc(g, q.x, q.y - 3, 5, rgba('#ffb040', 0.09 * k * f)); }
+  if (decorOn('halloween', 'skeleton')) { const s = L.skeleton, f2 = 0.8 + Math.random() * 0.2;   // skull eyes
+    disc(g, s.x, s.y - 10, 7, rgba('#ff9a2a', 0.04 * k * f2)); disc(g, s.x, s.y - 10, 4, rgba('#ffb040', 0.07 * k * f2)); }
 }
 // Glowing pixels: garland bulbs and the jack-o'-lantern's eyes and mouth (over the night dimming).
 function halBulbs(g, E) {
   nyBulbs(g, E);
   const k = E.hal ? halLit(E) : 0; if (k <= 0) return;
-  for (const G of L.garlands) for (const b of G.bulbs) R(g, b.x, b.y, 2, 2, rgba(HAL_COL[b.c], k * (0.75 + 0.25 * Math.sin(T * 2.4 + b.ph))));
-  const q = L.lantern, left = q.x - 4, top = q.y - 7, a = k * (0.8 + Math.random() * 0.2);
-  LANT.forEach((row, j) => { for (let i = 0; i < 8; i++) if (row[i] === 'E') R(g, left + i, top + j, 1, 1, rgba('#ffc84a', a)); });
-  const s = L.skeleton, sl = s.x - 4, st = s.y - SKEL.length, a2 = k * (0.8 + Math.random() * 0.2);
-  SKEL.forEach((row, j) => { for (let i = 0; i < 9; i++) if (row[i] === 'E') R(g, sl + i, st + j, 1, 1, rgba('#ffc84a', a2)); });
+  if (decorOn('halloween', 'garlands')) for (const G of L.garlands) for (const b of G.bulbs) R(g, b.x, b.y, 2, 2, rgba(HAL_COL[b.c], k * (0.75 + 0.25 * Math.sin(T * 2.4 + b.ph))));
+  if (decorOn('halloween', 'lantern')) { const q = L.lantern, left = q.x - 4, top = q.y - 7, a = k * (0.8 + Math.random() * 0.2);
+    LANT.forEach((row, j) => { for (let i = 0; i < 8; i++) if (row[i] === 'E') R(g, left + i, top + j, 1, 1, rgba('#ffc84a', a)); }); }
+  if (decorOn('halloween', 'skeleton')) { const s = L.skeleton, sl = s.x - 4, st = s.y - SKEL.length, a2 = k * (0.8 + Math.random() * 0.2);
+    SKEL.forEach((row, j) => { for (let i = 0; i < 9; i++) if (row[i] === 'E') R(g, sl + i, st + j, 1, 1, rgba('#ffc84a', a2)); }); }
 }
 
 /* ---------- New Year ---------- */
@@ -295,7 +316,7 @@ function drawXmasTree(g, E) {
   const gold = '#ffd84a';   // plus-shaped star
   R(g, x, top, 1, 1, gold); R(g, x - 1, top + 1, 3, 1, gold); R(g, x, top + 2, 1, 1, gold); R(g, x, top + 1, 1, 1, '#fff3a0');
 }
-const nyItems = E => !E.ny ? [] : [{ y: L.xtree.base - 0.1, x: L.xtree.x, d: c => drawXmasTree(c, E) }]   // deeper than the NY_BASE segment boundary: people on lines 156 and closer stay in front of the lights;
+const nyItems = E => !E.ny || !decorOn('newyear', 'tree') ? [] : [{ y: L.xtree.base - 0.1, x: L.xtree.x, d: c => drawXmasTree(c, E) }]   // deeper than the NY_BASE segment boundary: people on lines 156 and closer stay in front of the lights;
 
 function drawNyWire(g, G) {
   for (const p of G.wire) R(g, p.x, p.y, 1, 1, '#22262a');
@@ -303,23 +324,23 @@ function drawNyWire(g, G) {
 }
 // Holiday statics into the ground cache: garland wires.
 function nyLand(items, E) {
-  if (!E.ny) return;
+  if (!E.ny || !decorOn('newyear', 'garlands')) return;
   for (const G of L.nyGarlands) items.push([G.base, c => drawNyWire(c, G)]);
 }
 // Soft glow of the garlands (under 'lighter').
 function nyGlow(g, E) {
-  const k = E.ny ? halLit(E) : 0; if (k <= 0) return;
+  const k = E.ny && decorOn('newyear', 'garlands') ? halLit(E) : 0; if (k <= 0) return;
   for (const G of L.nyGarlands) for (const b of G.bulbs) disc(g, b.x + 1, b.y + 1, 3, rgba(NY_GAR[b.c], 0.07 * k * (0.7 + 0.3 * Math.sin(T * 2.2 + b.ph))));
 }
 // Glowing garland pixels over the night dimming (fir-tree bulbs and star are drawn with the tree, see drawXmasTree).
 function nyBulbs(g, E) {
-  const k = E.ny ? halLit(E) : 0; if (k <= 0) return;
+  const k = E.ny && decorOn('newyear', 'garlands') ? halLit(E) : 0; if (k <= 0) return;
   for (const G of L.nyGarlands) for (const b of G.bulbs) R(g, b.x, b.y, 2, 2, rgba(NY_GAR[b.c], k * (0.75 + 0.25 * Math.sin(T * 2.2 + b.ph))));
 }
 // Fir-tree lights: glowing bulb and star pixels without the night dimming. Drawn straight to the screen at the segment boundary (BREAKS in render.js, like the fire):
 // everything closer than the tree (people on lines 156 and beyond) is drawn afterwards and covers the lights, and the light doesn't fall on people. The glow around is faint.
 function nyTreeLights(g, E) {
-  const k = E.ny ? halLit(E) : 0; if (k <= 0) return;
+  const k = E.ny && decorOn('newyear', 'tree') ? halLit(E) : 0; if (k <= 0) return;
   const q = L.xtree, top = nyTop(), f = 0.9 + 0.1 * Math.sin(T * 1.3);
   g.globalCompositeOperation = 'lighter';
   for (const b of q.bulbs) disc(g, q.x + b.dx, top + NY_ROW0 + b.row, 1, rgba(NY_BULB[b.c], 0.07 * k * (0.7 + 0.3 * Math.sin(T * (1.6 + b.ph % 1) + b.ph * 5))));

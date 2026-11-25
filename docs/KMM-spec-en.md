@@ -18,10 +18,17 @@ This document describes: how to run it, what is done and how it is built, the dr
 | `&month=1` | fixes the month (1–12) |
 | `&speed=120` | speeds up time (timelapse) |
 | `&aurora=1` | turns on the northern lights |
-| `&animals=fast` | animals and birds every 4–10 seconds |
+| `&animals=fast` | all random events (animals, birds, ghosts, shooting stars) about every 7 seconds on average; the species keep their shares |
+| `&events=fast` | the same as `&animals=fast` |
+| `&ghosts=fast`, `&meteors=fast`, `&hare=fast` | speeds up one event; the id of any event of the registry works |
 | `&day=25` | fixes the day of the month (for holidays, together with `&month=`); e.g. `?month=12&day=25` or `?month=1&day=10` for New Year |
 | `&snow=1` / `&snow=0` | snow lies / the ground is bare, in the months when snow can lie by the weather (April, October, November); e.g. `?month=11&snow=1` |
 | `&wind=270` | the direction the wind comes from, in degrees (270 — west, so the clouds go to the left) |
+| `&puddles=1` / `&puddles=0` | puddles at full size / no puddles |
+| `&rainbow=1` / `&rainbow=0` | a rainbow in the daytime (e.g. `?hour=8`) / never |
+| `&moon=0.5` | the Moon's phase (0 — new, 0.25 — first quarter, 0.5 — full, 0.75 — last quarter); whether it is up depends on the time, e.g. `?moon=0.5&hour=23` |
+
+The parameters work only in the browser: the app (Tauri) has no address bar, there everything is set by the settings.
 
 **The showcase** `sprite-lab.html` — a separate sprite-builder page, not connected to the in-game family: a single character that depends only on the chosen settings. On the left is the builder (the same `buildLookControls` as in the "Palette" dialog) and under it a "Copy / Paste" block with the appearance as text. On the right are the season buttons 🌻 / ⛄ and four frames in a row (standing, sitting, step 1, step 2), below that all hairstyles (4 per row) and an "age × height" table (child and adult, −1, 0, +1). It exists to draw and check layers without running the whole scene. It includes only `colors.js`, `layers.js`, `look_editor.js` and `look.css`. Initial look: adult, short hair, top + bottom, long sleeves, the first colors of every palette.
 
@@ -35,14 +42,14 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 - 🕒 🔄 "time as on the clock" (resets manual time) and a time-of-day slider;
 - 🌡️ weather text: current or of the chosen forecast;
 - 🔮 forecast: 🔄 now, +1, +2, +3 hours;
-- below, "manual": 🌦️ weather (🔄 as it really is, ☀️ clear, ⚡ thunderstorm, 💧 rain, ❄️ snow, 🌫️ fog), 📅 season (🔄 by the calendar, ⛄ winter, 🌱 spring, 🌻 summer, 🍂 autumn; ⚙ on the right — which holidays exist), 🐿️ animals and 🐦 birds (🐢 rarely, 🐇 often; ⚙ on the right of each — which species exist);
+- below, "manual": 🌦️ weather (🔄 as it really is, ☀️ clear, ⚡ thunderstorm, 💧 rain, ❄️ snow, 🌫️ fog; ⚙ on the right — sky and nature), 📅 season (🔄 by the calendar, ⛄ winter, 🌱 spring, 🌻 summer, 🍂 autumn; ⚙ on the right — which holidays exist), 🐿️ animals and 🐦 birds in one row: an icon and ⚙ each (how often every species occurs);
 - 📍 latitude and longitude for weather and day length; 💾 on the right — the game settings file (see below).
 
 "Now" in either of the two weather rows resets both. Choosing weather manually clears the forecast choice, and vice versa.
 
 **Family list** (under the scene panel): preview, name and the buttons ⚙ settings, 🎨 palette, 🎭 costume (only while a holiday is on; the preview shows the person in that costume) and 🗑 delete. At the bottom ➕ add, ✋ in-game actions and 💾 family file (the floppy disk on the right, like on the scene panel). While there is nobody in the family, instead of the list there is a hint: create a person or load a file. When a holiday begins or ends, the list redraws itself within a second, so the 🎭 buttons appear and disappear together with it.
 
-**Side panels** open to the right of the list, with matching tops. Only one is open: opening a second closes the first as "Cancel". One rule everywhere: edits accumulate in the panel and are applied only on "Done", "Cancel" closes the panel without changes. "Animals", "Birds" and "Holidays" open to the right of the scene panel.
+**Side panels** open to the right of the list, with matching tops. Only one is open: opening a second closes the first as "Cancel". One rule everywhere: edits accumulate in the panel and are applied only on "Done", "Cancel" closes the panel without changes. "Sky and nature", "Animals", "Birds" and "Holidays" open to the right of the scene panel.
 
 **Interface without dropdowns and system windows.** Buttons everywhere (`<select>`, `alert` and `confirm` are not used): that way the panels look like part of the game. Deleting a character is done with two presses on 🗑, messages are shown as a line in the panel.
 - **Settings** — name, wake-up, sleep, temper, "next to" (a row of buttons with names) and "Actions": buttons of the actions available to that age; pressed — does it, released — doesn't.
@@ -52,8 +59,9 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 - **Game settings** (💾 in the coordinate row of the scene panel) — everything chosen on the scene panels, as one text: the buttons "Download", "Copy", "Paste", "Open", a field and "Cancel" / "Done". Opens to the right of the scene panel, format below in "Saving".
 - **New character** — the same palette; the person is added on "Done".
 - **In-game actions** (✋) — buttons of all actions in the groups "Adults", "Children", "Everyone"; seasons are shown as icons. Pressed — the action is available to everyone who can do it, released — nobody does it.
-- **Animals / Birds** (⚙ in the scene panel) — one button per species: animals — hare, squirrel; birds — sparrow, tit, bullfinch, crow, magpie, jackdaws. Pressed — the species appears, released — it doesn't.
-- **Holidays** (⚙ in the season row) — one button per holiday: Halloween, New Year. Pressed — decorations are there, released — not.
+- **Animals / Birds** (⚙ next to the 🐿️ and 🐦 icons of the scene panel) — a list, every species on its own row: the icon with the name, and on the right four aligned buttons ❌ 🚶 🏃 🚴 — off / rare / normal / often, the needed level in one click. Animals: hare, squirrel; birds: sparrow, tit, bullfinch (🐤), crow, magpie, jackdaws (🐦). "Done" applies, "Cancel" closes the panel without changes.
+- **Holidays** (⚙ in the season row) — a button per holiday (Halloween, New Year): pressed — the holiday is on, released — it is not, and then there are neither decorations nor costumes. Under it, indented, a button per decoration in one row that wraps when there is not enough room: Halloween — skeleton, lantern, pumpkins, web with a spider, garlands; New Year — the tree, garlands. Pressed — the decoration is there, released — it is not; with the holiday off these buttons are dimmed but keep their own states. The ghosts (Halloween) stand on a row of their own and, instead of a switch, have four level buttons like the animals. The dates of the holidays are in the hint.
+- **Sky and nature** (⚙ in the weather row) — one button per item: puddles, rainbow, northern lights, shooting stars, and under them, indented, the names of the meteor showers (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids) in one row that wraps when there is not enough room; the date of the maximum is in the hint. Pressed — it exists, released — it doesn't; while shooting stars are off the showers are muted. The ⚙ makes the scene panel a little wider.
 
 ---
 
@@ -62,7 +70,7 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 ### The world
 - **Mixed forest** of pines and birches in rows from the horizon to the foreground (10 depth rows), distant trees smaller and in haze. Undergrowth, bushes (juniper, rowan, deciduous), boulders, moss, bilberry.
 - **A red cabin** with white window frames, smoke from the chimney, a glowing window. A fire pit with two log benches. To the left of the cabin a woodshed and a chopping block.
-- **Sky:** Bayer-matrix dithering, sun and moon along arcs, twinkling stars, clouds, northern lights.
+- **Sky:** Bayer-matrix dithering, sun and moon along arcs, real stars and shooting stars, clouds, northern lights.
 
 ### Time, seasons, day length
 - **Real clock.** Sunrise and sunset are computed from latitude, longitude and date (NOAA formulas) in the computer's time zone. There are white nights and polar day and night.
@@ -71,6 +79,10 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 - **Seasonal details:** ground and foliage colors, snow on crowns and roof, falling birch leaves, bilberry in July–August, lingonberry and mushrooms in autumn, rowan with berries, fireflies in summer.
 - **Footprints in the snow:** in winter, short prints are left behind walking people, the hare and the squirrel, and a stripe behind a rolling snowball. They fade within 10–14 seconds and are not saved anywhere. Long footprints that snowfall covers over were decided not to be done (`js/tracks.js`).
 - **Northern lights** — at latitude 55° and above (in either hemisphere) in the dark months, about every third night.
+- **The Sun and the Moon.** Both follow a circular arc across the sky (its centre lies deep under the ground); the height and length of the arc come from the real declination, as in life: the Sun is high in summer and low in winter, a full moon is high in winter and in the white nights of summer barely rises, a crescent in winter stays low. The forest is tall, so a low Sun or Moon stays behind the trees: in winter the Sun is hardly seen at all (`js/moon.js`).
+- **Moon phases.** The phase follows the date (a synodic month of 29.53 days): a thin crescent, a half disc at the quarters, a full disc at full moon, and at new moon nothing at all. A waxing Moon is lit on the right, a waning one on the left (the other way round in the southern hemisphere). The Moon rises about 50 minutes later every day: the first quarter is up in the afternoon and the evening, the full moon all night, the last quarter after midnight. A half disc and thicker is seen, paler, in the daytime too; a crescent only in the dark.
+- **Stars.** They stand in their real places: the height and the side of every star are computed from its coordinates for the time on the clock, the date and the latitude/longitude (sidereal time), so the sky turns during the night and changes by season — Orion and Taurus in winter, the Summer Triangle, Lyra and Cygnus in summer, the Pegasus square and Andromeda in autumn. About 190 bright stars with colours (red Betelgeuse, blue Rigel) and 520 faint background ones, no connecting lines. How many are seen follows the darkness and the clouds: in the twilight the brightest come first; a full moon washes out the faint stars and the ones near it; low stars are dimmer. The frame looks south, as the Sun's and the Moon's arc (in the southern hemisphere — north, with the same left-to-right motion). Near the zenith and to the north the sky does not fit: the Big Dipper and Cassiopeia pass high on this latitude and show only when they lean to the side (`js/stars.js`).
+- **Shooting stars.** In a dark clear sky a short streak with a fading tail, on average one in 10 minutes. On the days of seven meteor showers there are more of them (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids): each has a date of the maximum, a width and a radiant whose place in the sky is computed like a star's; the streaks fly away from the radiant, and the higher the radiant, the more meteors (the rates are tuned for a pleasant wallpaper, not real ones; at 61° the Eta Aquariids are weak, as in life). Test: `?month=8&day=12&hour=23` (Perseids), `&meteors=fast` for frequent ones. Puddles, rainbow, northern lights, shooting stars and each shower can be switched off in the ⚙ "Sky and nature" panel.
 
 ### Weather
 - **Open-Meteo** (free, no key), a request every 20 minutes: current weather and an hourly forecast for 3 hours (`weather_code`, `cloud_cover`, `wind_speed_10m`, `wind_direction_10m`, `temperature_2m`).
@@ -79,6 +91,8 @@ The appearance text is refreshed on any change. Pasting (the button or Ctrl+V di
 - **Wind** affects the speed and direction of the clouds, rain, snow and the smoke from the chimney and the fire, and the swaying of grass (speed only). The direction comes from the forecast and changes smoothly. The frame looks south, so a west wind blows from right to left and an east wind from left to right; a north or south wind gives a weak sideways drift. Weather chosen by hand has no direction: everything goes to the right.
 - **Heavy rain** (intensity ≥ 0.45): the family goes into the cabin, the fire is not lit, animals and birds don't appear.
 - **In summer, snow** turns into rain.
+- **Puddles.** After rain puddles form on the ground in front of the people lines: they appear one by one, grow while it rains, and shrink and vanish one by one within an hour or two after it stops (a drizzle fills the ground slowly, a downpour in a few minutes). They mirror the sky of that moment, a sunset included, and while it rains rings from the drops run across them. There are none where snow lies or is arriving, and in frost. They keep away from the cabin, the fire, boulders and the holiday decorations (`js/puddles.js`).
+- **Rainbow.** After a real rain (not a sprinkle) the sky gets a chance to show one: if within half an hour the rain has stopped, the sun is out and the clouds have thinned, it appears with a 70% chance, slowly fades in, hangs for 10–20 minutes and fades out. It also goes away when the rain comes back, the sun sets, the sky closes over or snow lies. It stands on the side of the sky opposite the Sun, translucent: brighter in clear daylight, weaker under clouds, invisible at night; its ends hide behind the hills and trees (`js/rainbow.js`).
 - **Without a network** the scene works without real weather.
 - The data is a forecast model, not a weather station: it may show a local downpour over the house as drizzle.
 
@@ -118,24 +132,32 @@ Any number of characters, including zero: on the first launch the family is empt
 - **"Fidget" behavior:** they run, jump, play; if `follows` is set — they stay close to that one: by the fire they sit on the free spot closest to him (no spots — next to him on the ground), pick berries together.
 
 ### Animals
-Every 5–10 minutes (in "often" mode — 4–10 seconds), a hare or a squirrel, equally. Species disabled in ⚙ don't appear; if both are disabled, there are no animals.
+Every species is an event of the registry (see "Random events"): at the "normal" level a hare and a squirrel appear about once in 15 minutes each (together once in 7.5 minutes, as with the former timer of 5–10 minutes). They don't appear in a downpour. A species that is off doesn't appear, and one already on the scene disappears at once; if both are off, there are no animals.
 - **Brown hare:** in the depth of the forest jumps from edge to edge, hides behind trunks. In the foreground he runs toward the family, about 2 m away he sits up like a post and dashes back.
 - **Squirrel:** runs in hops to a foreground tree, climbs in jerks, sits under the crown, jumps in an arc to neighbouring trees (up to 3 times), descends head-first and runs away.
 
 ### Birds
-A separate timer, also every 5–10 minutes. Only in the daytime and not in a downpour. Any species can be disabled in ⚙; the chances of the others stay the same.
+Every species is an event of the registry of its own. Only in the daytime and not in a downpour. The mean intervals at the "normal" level repeat the former timer of 5–10 minutes with chances 8% a flock of jackdaws / 46% small birds / 46% big ones: small birds together about once in 16 minutes (sparrow and tit about 41 minutes each in summer and 65 in winter, bullfinch about 82 in summer and 33 in winter: bullfinches come more often in winter), crow and magpie about 33 minutes each, jackdaws once in about 94 minutes. Any species can be switched off, made rarer or more frequent, and the others don't change.
 - **Small** (sparrow, tit, bullfinch; bullfinches more often in winter): 1–3 at a time, fly in a wave, flit over 2–5 trees, sometimes land on the ground and peck.
 - **Large** (crow, magpie): fly from edge to edge, flapping in 4 phases and gliding; in about half the cases they land on the top of a tree.
 - **Jackdaws:** a flock of 8–12 birds; in 40% of cases they settle over 3–4 trees and take off all at once.
 
+### Random events
+
+Everything random (animals, birds, ghosts, shooting stars) goes through one registry and one scheduler (`js/events.js`). An event is described with one `defineEvent({...})` next to the code that draws it: id, group (animals, birds, holidays, sky), icon and name, the mean interval `gap` at the "normal" level (a number or a function of `E`), the condition `can(E)` ("may it happen now": no downpour, dark or light) and the action `run(E)`. Optionally: `on(E)` (the event is alive only while a holiday lasts), `first` (when it happens the first time), `spread` (the spread of the interval, by default 0.67 to 1.33 of the mean, i.e. 300–600 seconds for a mean of 450), `poisson` (a chance every frame instead of a timer, for events whose rate changes all the time: that is how meteors work), `fast` (the mean interval in the test mode).
+
+Frequency levels: ❌ off, 🚶 rare, 🏃 normal, 🚴 often. The interval is multiplied by 2.5 / 1 / 0.1 (the multipliers are in one constant, `EV_MULT`). Every species of animals and birds and the ghosts have a level; meteors are still switched by the switch in the "Sky" panel. "Normal" repeats the behaviour from before the scheduler. If the timer ends while `can(E)` is false (for example, in daylight for the ghosts), the event is skipped and the next try comes after an ordinary interval. When a level changes, the timer of that event starts again. The levels are stored in `localStorage` (`forest.events.v1`, only what is not "normal") and are part of `settings.json`.
+
+A new event is added with one entry of the registry (the elk, the hedgehog, the skein of geese and the owl from the ideas below); the panels of animals, birds and holidays are built from the lists `FAUNA` (`js/animals.js`) and `HOLIDAYS` (`js/holidays.js`).
+
 ### Holidays
-Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There are two for now: Halloween (15–31 October, everything disappears on 1 November) and New Year (15 December – 14 January). Each can be disabled in ⚙ (season row): then its decorations are absent.
+Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There are two for now: Halloween (15–31 October, everything disappears on 1 November) and New Year (15 December – 14 January). The holiday and each of its decorations can be switched off in ⚙ (season row); a holiday that is off means neither decorations nor costumes. The costumes depend only on the holiday itself, not on the switches of the decorations. Decorations with their own switches (key `<holiday>.<decoration>`): skeleton, lantern, pumpkins, web, garlands (Halloween) and the tree, garlands (New Year); the ghosts are an event with levels. The scene is redrawn when a switch changes.
 - **Pumpkins** appear in the forest one every two days (the first on the 15th, the ninth by the 31st). The spots are fixed, not by the cabin, the fire and boulders.
 - **Jack-o'-lantern** stands to the right of the end of the path to the house. From dusk its eyes and mouth glow and flicker, the ground around is lit.
-- **Garlands** (up to five) hang between neighbouring front-row trees. Bulbs 2×2 alternate orange and purple, dim by day, lit and flickering in the evening.
-- **The web** is one, round (8 spokes, 2 rings), between two trees nearer the middle of the scene, above heads, below the needles. Every 50 seconds a little spider descends on a thread, hangs, and climbs back up. Its place is found before the garlands, and they go around it.
+- **Garlands** (up to five) hang between neighbouring front-row trees. Bulbs 2×2 alternate orange and purple, dim by day, lit and flickering in the evening. The garlands are laid after the web and again every time a switch changes: while the web is on they share the space with it and go around it, and without the web they take all the free space.
+- **The web** is one, round (8 spokes, 2 rings), between two trees nearer the middle of the scene, above heads, below the needles. Every 50 seconds a little spider descends on a thread, hangs, and climbs back up. Its place is found before the garlands; while the web is on they go around it.
 - **Skeleton decoration** 7×13 stands in the bottom-left corner (facing the viewer). In the evening its eye sockets glow and flicker, like the jack-o'-lantern's. The foreground grass next to it is not drawn during the holiday (otherwise it covers its legs), then it grows back.
-- **Ghosts** Pac-Man style (Blinky, Pinky, Inky, Clyde), 7×8, 25% transparent. At dusk and at night every 1–3 minutes (with `&animals=fast` — every 4–10 seconds) one flies out, sometimes a chain of 2–4. They float a little above the ground at the far-forest depth, hide behind nearby trunks, fly from edge to edge.
+- **Ghosts** Pac-Man style (Blinky, Pinky, Inky, Clyde), 7×8, 25% transparent. An event of the registry: while Halloween lasts, at dusk and at night without a downpour, at the "normal" level one flies out every 1–3 minutes, sometimes a chain of 2–4. They float a little above the ground at the far-forest depth, hide behind nearby trunks, fly from edge to edge.
 
 **New Year.** Runs from 15 December to 14 January, and also always while winter ⛄ is selected manually on the panel. Without a day `?month=1` gives the 15th, so for testing you also need `&day=`.
 - **Garlands** red-and-green, up to five. They hang between trees of the front rows standing on the same or neighbouring lines, each with at least five bulbs. In the evening they light up and flicker. On a narrow window there are few trees, and only two or three garlands come out.
@@ -146,15 +168,16 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - **Coordinates:** in `localStorage` (`forest.settings.v1`), separately from the family file, so they don't go to friends along with the file.
 - **Snowman:** readiness, owner and save time in `localStorage` (`forest.snowman.v1`); after a restart he returns if it is still winter and less than 100 days have passed. Doesn't go into the family file.
 - **Firewood:** the number of logs in the woodshed in `localStorage` (`forest.wood.v1`), doesn't go into the family file.
+- **Puddles:** how wet the ground is, in `localStorage` (`forest.puddles.v1`), doesn't go into the family file; after a restart the ground has dried by the time the wallpaper was off. Not saved while time, weather or season are set by hand, or by `?month=` / `?day=`.
 - **Snow cover:** how much snow lies, in `localStorage` (`forest.snowcover.v1`), doesn't go into the family file. After a restart November snow returns, April and October snow only if the wallpaper was off for less than 5 days. Not saved when the time is set by `?month=` or `?day=`.
 - **Game settings** (`js/gsettings.js`): the file `settings.json`, not connected to the family and not going with it. Everything chosen on the scene panels. Fields missing from the file stay as they are; unknown ids in lists are skipped; an error in any field cancels the application entirely.
   ```json
   { "location": { "lat": 61.07, "lon": 28.28 }, "time": "now", "weather": "now", "season": "now",
-    "holidays": "all", "actions": "all",
-    "animals": { "rate": "slow", "species": "all" }, "birds": { "rate": "slow", "species": "all" } }
+    "holidays": "all", "actions": "all", "sky": "all",
+    "animals": { "species": "all" }, "birds": { "species": "all" } }
   ```
-  `time`: `"now"` or a number of hours (21.5). `weather`: `"now"`, forecast `"+1"`, `"+2"`, `"+3"` or `clear`, `storm`, `rain`, `snow`, `fog`. `season`: `"now"`, `winter`, `spring`, `summer`, `autumn`. `holidays`, `actions`, `species`: `"all"` (everything the game has, new ones turn on by themselves) or a list of enabled ids. `rate`: `slow` or `fast`. The current state, including manual time, weather and season, is remembered in `localStorage` (`forest.gs.v1`) and restored after a restart (🔄 returns "as it really is"); the `?animals=fast` address is stronger than the file at startup. The family and world state (snowman, firewood) are not included in the settings.
-- **Switches ✋ and ⚙:** `localStorage` (`forest.actions.v1`, `forest.fauna.v1`, `forest.holidays.v1`), don't go into the family file, but are included in the game settings (`settings.json`). A character's personal actions — the `actions` field in the family file.
+  `time`: `"now"` or a number of hours (21.5). `weather`: `"now"`, forecast `"+1"`, `"+2"`, `"+3"` or `clear`, `storm`, `rain`, `snow`, `fog`. `season`: `"now"`, `winter`, `spring`, `summer`, `autumn`. `actions`, `sky`: `"all"` (everything the game has, new ones turn on by themselves) or a list of enabled ids. `holidays`: `"all"` or an object per holiday `{ "halloween": ..., "newyear": ... }`, where the value is `"all"` (the holiday and all decorations), `"off"` (no holiday; the choice of decorations is kept) or an object of decorations `{ "pumpkins": true, "web": false, "ghosts": "often" }` (missing ones stay as they are; the ghosts take a level instead of true/false); a holiday missing from the object stays as it is. Decoration ids: Halloween — `skeleton`, `lantern`, `pumpkins`, `web`, `garlands`, `ghosts`; New Year — `tree`, `garlands`. `species`: `"all"` (all at "normal") or an object `{ "hare": "often", "sq": "off" }` with the levels `off`, `rare`, `normal`, `often` (missing ones stay as they are). `sky` ids: `puddles`, `rainbow`, `aurora`, `meteors` and the showers `quadrantids`, `lyrids`, `etaaquariids`, `perseids`, `orionids`, `leonids`, `geminids`. The current state, including manual time, weather and season, is remembered in `localStorage` (`forest.gs.v1`) and restored after a restart (🔄 returns "as it really is"). The family and world state (snowman, firewood) are not included in the settings.
+- **Switches ✋ and ⚙:** `localStorage` (`forest.actions.v1`, `forest.events.v1` (levels of animals, birds and ghosts), `forest.holidays.v1` (holidays and decorations), `forest.sky.v1`), don't go into the family file, but are included in the game settings (`settings.json`). A character's personal actions — the `actions` field in the family file.
 - On loading and at startup colors are snapped to the nearest palette colors.
 - **First launch in Tauri (settings):** the same for game settings: if there is no `forest.gs.v1` record at all, the page asks for the `read_settings_file` command, which reads `settings.json` next to the exe (no file — it returns a sample embedded from `src-tauri/src/settings_default.json`).
 - **First launch in Tauri (family):** if there is no family record in `localStorage` at all, the page asks Tauri for the `read_family_file` command: it reads `family.json` next to the exe (no file — it returns the default person embedded in the exe from `src-tauri/src/family_default.json`), and the family is applied. After that it lives in `localStorage`: manual edits to the file will only be picked up after clearing the webview data or loading via 💾. An empty family left by the person themselves (the record `[]`) is not overwritten by the file (`js/main.js`). In a regular browser there is no command, and the family is empty by default.
@@ -176,8 +199,13 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 | `js/util.js`, `js/palette.js` | utilities and season palettes |
 | `js/time.js`, `js/weather.js` | clock, seasons, sunrise and sunset; weather, forecast and wind direction |
 | `js/snowcover.js` | snow on the ground by the weather: how much lies, melting, saving |
+| `js/puddles.js` | puddles: places, filling by rain and drying, reflection of the sky, rings from drops |
+| `js/rainbow.js` | the rainbow after rain: when it appears, fades in and out, drawing |
+| `js/moon.js` | the Moon: phase, rise and set, drawing of the disc; the arc of the Sun and the Moon across the sky |
+| `js/stars.js` | stars (real places by time, date and location), shooting stars and meteor showers, the switches of the "Sky and nature" panel |
 | `js/layout.js`, `js/render.js` | scene layout and rendering |
 | `js/sprites.js` | animal and bird sprites |
+| `js/events.js` | the registry of random events and the single scheduler: frequency levels (off / rare / normal / often), timers |
 | `js/people.js`, `js/animals.js`, `js/particles.js` | people's, animals' and birds' behavior, particles |
 | `js/snowman.js` | the snowman: rolling balls, melting, saving |
 | `js/path.js` | the winter path from the cabin: snow on it, clearing with a shovel |
@@ -185,7 +213,7 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 | `js/tracks.js` | short footprints in the snow |
 | `js/holidays.js` | holidays: Halloween (pumpkins, jack-o'-lantern, garlands, web with a spider, skeleton, ghosts) and New Year (garlands, Christmas tree) |
 | `js/storage.js`, `js/ui.js` | family saving; the scene panel and the wallpaper close button |
-| `js/ui_family.js`, `js/ui_editor.js`, `js/look_editor.js`, `js/ui_palette.js`, `js/ui_costumes.js`, `js/ui_file.js`, `js/ui_actions.js`, `js/ui_fauna.js`, `js/ui_holidays.js` | family list and side panels (including 🎭, ✋ and ⚙) |
+| `js/ui_family.js`, `js/ui_editor.js`, `js/look_editor.js`, `js/ui_palette.js`, `js/ui_costumes.js`, `js/ui_file.js`, `js/ui_actions.js`, `js/ui_fauna.js`, `js/ui_holidays.js`, `js/ui_sky.js` | family list and side panels (including 🎭, ✋ and ⚙) |
 | `js/gsettings.js`, `js/ui_gsettings.js` | game settings: collecting and applying, remembering, reading `settings.json`; the 💾 panel |
 | `js/main.js` | startup; family at start (localStorage, otherwise `family.json` next to the exe) |
 | `src-tauri/src/lib.rs`, `family_default.json`, `settings_default.json`, `tauri.conf.json` | the Tauri shell: a window under all windows, creating `family.json` and `settings.json` next to the exe, the `read_family_file`, `read_settings_file` and `quit_app` commands |
@@ -195,9 +223,9 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 ### Rendering
 - **Internal resolution:** height 180 px, width proportional to the screen. The canvas is stretched to the whole screen with `image-rendering: pixelated`.
 - **20 frames per second**, paused when `document.hidden`.
-- **The winter path** from the cabin is not included in the ground cache: the snow on it changes, so it is drawn every frame as a layer-0 object (before everything else).
+- **The winter path** from the cabin is not included in the ground cache: the snow on it changes, so it is drawn every frame as a layer-0 object (before everything else). The puddles are drawn the same way, since their size changes.
 - **Snow arriving and leaving.** While snow lies only partly (`E.snowQ`, the white share in 32 steps, is part of the cache key), the ground is built twice, bare and snowy, and the two pictures are mixed through a fixed map of soft spots (`buildGround` in `js/render.js`): the ground, and a little the trees, boulders and bushes, turn white in spots that grow and merge. In the scene the season becomes `winter` when more than half is white.
-- **Caches** are rebuilt every 30 game seconds or when the season, cloud cover or size changes: the sky (`ImageData` with dithering) and the ground (**13 depth layers**, edges in `LAYER_EDGES`: an object goes into a layer by its base `y`). The edges are denser where people walk: 156, 159 (fire boundary), 161. The people line y=160 lies in the layer [159, 161).
+- **Caches** are rebuilt every 30 game seconds or when the season, cloud cover, size or the holiday switches change: the sky (`ImageData` with dithering) and the ground (**13 depth layers**, edges in `LAYER_EDGES`: an object goes into a layer by its base `y`). The edges are denser where people walk: 156, 159 (fire boundary), 161. The people line y=160 lies in the layer [159, 161).
 - **Drawing order.** For each layer: the layer's picture from the cache, then the footprints in the snow, then the dynamic objects of that layer, sorted by `y` (by `x` when equal). The dynamic objects are collected by `sceneItems()`: people, animals and ground birds, the snowman and ball, firewood and the woodshed, pine cones and bucket, jack-o'-lantern, spider, winter path. Each has a base `y`, the layer is computed from it. Exceptions with a flag: `over` (over the segment: birds in the air and on trees, smoke) and `l` (explicit layer, for the path).
 - **Segments and glowing objects.** The scene is drawn onto several segment canvases, the boundaries between them set by the `BREAKS` list (boundary `y` and a draw function). Each segment is dimmed at night separately, and between the segments a glowing object is drawn that must not be dimmed. There are two boundaries for now: the New Year tree lights at y=154 and the fire at y=159 (flame and sparks). Whatever is deeper is behind the flame, whatever is at y=159 and closer covers it. Foreground grass, rain, snow and leaves in the air are drawn at the end of the last segment. A new boundary = a new entry in `BREAKS`.
 - **Lighting:** each of the canvases is dimmed separately, night dimming and the warm dusk tint are applied via `source-atop`; light sources (fire, window, fireflies, sparks) are drawn after the dimming via `lighter`.
@@ -267,16 +295,10 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - **Elk** — a rare event once every few days.
 - **Fox** mouse-hunting in winter: a jump and a dive into the snowdrift.
 - **Woodpecker** pecks the trunk, chips fly.
-- **Shooting stars** on clear nights, more often in mid-August.
-- **Rainbow** after rain, if the sun came out.
 - **Owl** on a pine at night: hoots, turns its head.
-- **Puddles:** they appear from the rain, stay for an hour or two and reflect the sky in the colour from `E.top` / `E.hor`; while it rains, rings from the drops run across them.
-- **Moon phases:** crescent, half, full — by date (a synodic month of 29.53 days); the Moon's place in the sky is already computed in `env()`. Visibility comes with it: at new moon there is no Moon at all, and the crescent is low and only right after sunset.
-- **The starry sky by season:** only the real constellations of the visible part of the sky, with no connecting lines — at 180 px they are dots anyway. The frame looks south (the sun and the Moon arc across it from left to right), so winter brings Orion, summer the Summer Triangle, autumn Pegasus; the Big Dipper and Cassiopeia are northern and never get into the frame.
 - **Birds on the cabin roof and on the woodpile:** now they land only on trees and on the ground, while the roof (base 142) and the woodpile are ready perches.
 - **A skein of geese in spring and autumn:** 5–9 birds in a V once every few days — the size of crows, so the "V" reads. In October they pass here in thousands.
 - **A hedgehog:** in the evening by the porch, a rare guest — comes, rustles, leaves; 7×5 with spines, a silhouette that cannot be confused with the small birds.
-- **One timer for rare events:** a single scheduler instead of a separate timer for every creature; each event has its own rarity — an elk and a hedgehog rarer than a hare and a squirrel, just as jackdaws are already rarer than the other birds.
 
 ### 5.2. Interaction
 - **Clicks:** on a tree — a bird flutters up, on a family member — he waves his hand.
@@ -339,3 +361,5 @@ Tied to the calendar, for testing: `?month=10&day=25` (`js/holidays.js`). There 
 - The time zone is taken from the computer; the coordinates in the settings must match it, otherwise sunrise and sunset shift.
 - Child +1 is drawn separately and exists only at standard height. The remaining height ±1 is duplicating or removing a torso row; on a small body it is noticeable (child −1 has a torso of only one row).
 - For the southern hemisphere the seasons shift, but berries and mushrooms are tied to the "northern" months.
+- The paths of the Sun and the Moon are a scheme: the Moon's declination ignores the tilt of its orbit (about 5°), the screen position is not the real azimuth, and the Sun's height is scaled to the picture (`SKY_ALT_K` in `js/moon.js`).
+- Stars and the radiants of the showers are a scheme like the Sun's and the Moon's path: the height uses the same `SKY_ALT_K`, the width is stretched less at a height, what is near the zenith or behind the frame is not shown, precession is ignored, and in the southern hemisphere the sky is a mirror image (so that time still flows left to right). Meteor rates are not real.

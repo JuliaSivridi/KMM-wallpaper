@@ -1,21 +1,25 @@
-let FAST_ANI = Q.get('animals') === 'fast', FAST_BIRD = Q.get('animals') === 'fast';
 const ANI = [];
-// What wildlife exists at all (the ⚙ panels next to the "Animals" and "Birds" rows). Disabled creatures don't appear; the global switch is stored in the browser.
+// What wildlife exists (the ⚙ panels next to the 🐿️ and 🐦 icons). Every species is an event of the registry (js/events.js) with its own frequency level (off / rare / normal / often).
+// gap — mean interval in seconds at the "normal" level; the figures repeat the former behaviour: animals — a group timer of 300–600 s (mean 450) with a hare or a squirrel in turn,
+// birds — the same timer with chances 8% a flock of jackdaws, 46% small birds, 46% big ones (and in each group the species share it: small birds by the old weights, in winter bullfinches more often).
+const FAUNA_GROUP_GAP = 450;
+const winterE = E => E.season === 'winter';
 const FAUNA = {
-  animals: [{ id: 'hare', icon: '🐇', name: 'Hare' }, { id: 'sq', icon: '🐿️', name: 'Squirrel' }],
-  birds: [{ id: 'sparrow', icon: '🐦', name: 'Sparrow' }, { id: 'tit', icon: '🐦', name: 'Tit' }, { id: 'bullfinch', icon: '🐦', name: 'Bullfinch' },
-          { id: 'crow', icon: '🐦', name: 'Crow' }, { id: 'magpie', icon: '🐦', name: 'Magpie' }, { id: 'jackdaw', icon: '🐦', name: 'Jackdaws (flock)' }],
+  animals: [{ id: 'hare', icon: '🐇', name: 'Hare', gap: 900, run: () => spawnHare() }, { id: 'sq', icon: '🐿️', name: 'Squirrel', gap: 900, run: () => spawnSquirrel() }],
+  birds: [{ id: 'sparrow', icon: '🐤', name: 'Sparrow', gap: E => winterE(E) ? 3913 : 2446, run: () => spawnBirds('small', 'sparrow') },
+          { id: 'tit', icon: '🐤', name: 'Tit', gap: E => winterE(E) ? 3913 : 2446, run: () => spawnBirds('small', 'tit') },
+          { id: 'bullfinch', icon: '🐤', name: 'Bullfinch', gap: E => winterE(E) ? 1957 : 4891, run: () => spawnBirds('small', 'bullfinch') },
+          { id: 'crow', icon: '🐦', name: 'Crow', gap: 1957, run: () => spawnBirds('big', 'crow') },
+          { id: 'magpie', icon: '🐦', name: 'Magpie', gap: 1957, run: () => spawnBirds('big', 'magpie') },
+          { id: 'jackdaw', icon: '🐦', name: 'Jackdaws (flock)', gap: 5625, run: () => spawnBirds('flock', 'jackdaw') }],
 };
-const FAUNA_KEY = 'forest.fauna.v1';
-let FAUNA_OFF = {};   // { crow: true } — this creature is absent
-try { const o = JSON.parse(localStorage.getItem(FAUNA_KEY) || 'null'); if (o && typeof o === 'object') FAUNA_OFF = o; } catch (e) {}
-const faunaOn = id => !FAUNA_OFF[id];
-function saveFaunaOff() { try { localStorage.setItem(FAUNA_KEY, JSON.stringify(FAUNA_OFF)); } catch (e) {} }
-// Disabled creatures already on the scene are removed immediately.
+const faunaOn = id => evLevel(id) !== 'off';
+// Species switched off while already on the scene are removed immediately.
 function purgeFauna() { for (const a of ANI) if (!faunaOn(a.kind === 'bird' ? a.sp : a.kind)) a.dead = true; }
-let aniT = FAST_ANI ? 2 : rand(300, 600), birdT = FAST_BIRD ? 3 : rand(300, 600);
-const nextAni = () => FAST_ANI ? rand(4, 10) : rand(300, 600);
-const nextBird = () => FAST_BIRD ? rand(4, 10) : rand(300, 600);
+// In the test mode "fast" all animals together (and all birds together) appear about every 7 seconds: every species keeps its share.
+const fastOf = gap => E => 7 * (typeof gap === 'function' ? gap(E) : gap) / FAUNA_GROUP_GAP;
+for (const grp of ['animals', 'birds'])
+  for (const d of FAUNA[grp]) defineEvent({ id: d.id, group: grp, icon: d.icon, name: d.name, gap: d.gap, fast: fastOf(d.gap), can: E => !E.wet && (grp === 'animals' || E.d > 0.25), run: d.run });
 function aniPal(kind, E, dep) {
   const w = E.season === 'winter', hz = dep >= 1 ? 0 : hazeOf(dep) * 0.6, fog = c => hz ? mixHex(c, E.S.hillNear, hz) : c;
   if (kind === 'sq') return { B: fog(w ? '#8c8a8e' : '#a84a22'), K: fog(w ? '#5e5a5c' : '#6e2e14'), T: fog(w ? '#a07a66' : '#d97a3a'), b: fog(w ? '#e8e2da' : '#e6c9a0'), P: fog(w ? '#5e5a5c' : '#7a3a1a'), E: '#111111' };
@@ -23,27 +27,15 @@ function aniPal(kind, E, dep) {
 }
 const trunkCX = t => t.x - 2;
 const crownY = t => t.base - Math.round(t.h * 0.58);
-const smallPool = E => (E.season === 'winter' ? ['sparrow', 'tit', 'bullfinch', 'bullfinch'] : ['sparrow', 'sparrow', 'tit', 'tit', 'bullfinch']).filter(faunaOn);
-function spawnBird(E) {
-  if (E.wet || E.d <= 0.25) return;
-  // previous chances: flock 8%, small and big 46% each; disabled species are excluded from the draw
-  const kinds = [['flock', 0.08, faunaOn('jackdaw')], ['small', 0.46, smallPool(E).length > 0], ['big', 0.46, faunaOn('crow') || faunaOn('magpie')]].filter(k => k[2]);
-  let r = Math.random() * kinds.reduce((s, k) => s + k[1], 0);
-  for (const k of kinds) { r -= k[1]; if (r < 0) return spawnBirds(k[0], E); }
+function spawnHare() {
+  const fromLeft = Math.random() < 0.5, front = Math.random() < 0.4, y = front ? Math.round(rand(163, 168)) : Math.round(rand(131, 138));
+  ANI.push({ kind: 'hare', front, x: fromLeft ? -10 : W + 10, y, dir: fromLeft ? 1 : -1, speed: front ? 34 : 24, ph: 0, state: 'run', t: 0, dep: front ? 1 : (y - 126) / 26 });
 }
-function spawnAnimal(E) {
-  if (E.wet) return;
-  const hare = faunaOn('hare'), sq = faunaOn('sq');
-  if (!hare && !sq) return;
-  if (hare && (!sq || Math.random() < 0.5)) {
-    const fromLeft = Math.random() < 0.5, front = Math.random() < 0.4, y = front ? Math.round(rand(163, 168)) : Math.round(rand(131, 138));
-    ANI.push({ kind: 'hare', front, x: fromLeft ? -10 : W + 10, y, dir: fromLeft ? 1 : -1, speed: front ? 34 : 24, ph: 0, state: 'run', t: 0, dep: front ? 1 : (y - 126) / 26 });
-  } else {
-    const trees = L.trees.filter(t => t.base >= 146 && t.x > 12 && t.x < W - 12);
-    if (!trees.length) return;
-    const tr = trees[Math.floor(Math.random() * trees.length)], left = tr.x < W / 2;
-    ANI.push({ kind: 'sq', x: left ? -8 : W + 8, y: tr.base, dir: left ? 1 : -1, tree: tr, state: 'toTree', t: 0, ph: 0, jumps: 0 });
-  }
+function spawnSquirrel() {
+  const trees = L.trees.filter(t => t.base >= 146 && t.x > 12 && t.x < W - 12);
+  if (!trees.length) return;
+  const tr = trees[Math.floor(Math.random() * trees.length)], left = tr.x < W / 2;
+  ANI.push({ kind: 'sq', x: left ? -8 : W + 8, y: tr.base, dir: left ? 1 : -1, tree: tr, state: 'toTree', t: 0, ph: 0, jumps: 0 });
 }
 function smallPerch() {
   if (Math.random() < 0.25) { const y = Math.round(rand(150, 170)); return { x: rand(W * 0.15, W * 0.95), y, ground: true }; }
@@ -56,7 +48,7 @@ function treeTops(dirFrom, n) {
   const out = []; for (let i = 0; i < n && ts.length; i++) out.push(ts.splice(Math.floor(Math.random() * ts.length), 1)[0]);
   return out;
 }
-function spawnBirds(size, E) {
+function spawnBirds(size, sp) {
   const fromLeft = Math.random() < 0.5;
   if (size === 'flock') {
     const n = 8 + Math.floor(Math.random() * 5), dir = fromLeft ? 1 : -1, y0 = rand(30, 65), land = Math.random() < 0.4;
@@ -70,11 +62,10 @@ function spawnBirds(size, E) {
     return;
   }
   if (size === 'small') {
-    const pool = smallPool(E);
-    const sp = pool[Math.floor(Math.random() * pool.length)], n = 1 + Math.floor(Math.random() * 3);
+    const n = 1 + Math.floor(Math.random() * 3);
     for (let i = 0; i < n; i++) ANI.push({ kind: 'bird', size, sp, x: fromLeft ? -8 - i * 9 : W + 8 + i * 9, y: rand(55, 95), dir: fromLeft ? 1 : -1, state: 'fly', target: smallPerch(), stops: 2 + Math.floor(Math.random() * 4), ph: Math.random(), t: 0 });
   } else {
-    const bigs = ['crow', 'magpie'].filter(faunaOn), sp = bigs[Math.floor(Math.random() * bigs.length)], y = rand(25, 70), dir = fromLeft ? 1 : -1;
+    const y = rand(25, 70), dir = fromLeft ? 1 : -1;
     const b = { kind: 'bird', size, sp, x: fromLeft ? -12 : W + 12, y, dir, state: 'fly', ph: Math.random(), t: 0, target: null };
     if (Math.random() < 0.45) {
       const ahead = L.trees.filter(t => t.base >= 146 && (t.x - b.x) * dir > 60 && t.x > 15 && t.x < W - 15);
@@ -134,8 +125,6 @@ function aniItems(E) {
   return o;
 }
 function updateAnimals(dt, E) {
-  aniT -= dt; if (aniT <= 0) { spawnAnimal(E); aniT = nextAni(); }
-  birdT -= dt; if (birdT <= 0) { spawnBird(E); birdT = nextBird(); }
   for (const a of ANI) {
     a.ph += dt;
     if (a.kind === 'bird') { updateBird(a, dt); continue; }
