@@ -16,7 +16,7 @@ people, looks, daily routine. Plain JavaScript, no dependencies, wrapped in a [T
 - A family of any size, built in an in-app constructor: age, height, hairstyle, clothes, colours, wake/sleep times, temper.
 - Holiday costumes for Halloween and New Year (🎭 in the family list): hats, ears, antlers, a ghost sheet, a skeleton, a witch robe, a pumpkin suit and more.
 - Things to do: sitting by the fire, picking berries, building a snowman, clearing the path, chopping firewood, collecting cones.
-- Hares, squirrels and birds, each species with its own frequency (off / rare / normal / often); Halloween and New Year decorations, each switchable separately (the ghosts have frequency levels too).
+- Hares, squirrels, a hedgehog by the cabin in the evening, a fox (in winter it hunts mice, diving into the snow), a moose far in the forest and birds, each species with its own frequency (off / rare / normal / often); Halloween and New Year decorations, each switchable separately (the ghosts have frequency levels too).
 - Panels hidden in the top-left corner of the screen (hover to show them): time, weather, sky and nature switches, season, animals, holidays, coordinates, family, settings files.
 
 The full description of the game (what it does and how it is built) is in the specification:
@@ -93,6 +93,7 @@ The parameters work only in the browser; the app has no address bar.
 
 `src/sprite-lab.html` is a separate page for drawing and checking character sprites.
 `src/costumes.html` is the same kind of page for the holiday costumes.
+`src/animal-lab.html` is the same kind of page for drawing the frames of animals and birds: it gives text to paste into `js/sprites.js`.
 
 ## How the Tauri part works
 
@@ -116,6 +117,7 @@ src/                  the wallpaper itself (HTML, CSS, JS)
   index.html
   sprite-lab.html     sprite showcase and constructor
   costumes.html       costume showcase
+  animal-lab.html     animal and bird sprite editor
   css/
   js/
 src-tauri/            Tauri shell (Rust)

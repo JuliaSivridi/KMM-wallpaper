@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animal lab</title>
+<style>
+  html, body { margin: 0; background: #1a2244; color: #e8ecff; font: 600 13px/1.4 Consolas, "Courier New", monospace; }
+  .app { display: grid; grid-template-columns: 250px minmax(0, 1fr) 420px; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; align-items: start; }
+  @media (max-width: 1100px) { .app { grid-template-columns: 1fr; } }
+  .panel { background: #232d57; border: 2px solid #4a5680; padding: 12px; margin-bottom: 16px; }
+  .panel:last-child { margin-bottom: 0; }
+  h2 { font-size: 13px; margin: 0 0 8px; color: #9aa6d0; font-weight: 400; }
+  .btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  button { font: inherit; color: inherit; background: #26304f; border: 2px solid #4a5680; padding: 4px 8px; cursor: pointer; text-align: left; }
+  button:hover { border-color: #8fa3e0; }
+  button.on { background: #e8c447; color: #1a1a1a; border-color: #e8c447; }
+  .sw { display: grid; grid-template-columns: repeat(5, 40px); gap: 6px; margin-bottom: 8px; }
+  .sw button { width: 40px; height: 40px; padding: 0; text-align: center; font-weight: 700; text-shadow: 0 0 3px #000, 0 0 2px #000; border: 2px solid #4a5680; }
+  .sw button.on { outline: 2px solid #e8c447; outline-offset: 1px; border-color: #e8c447; background-clip: padding-box; }
+  .sw button.erase { background: repeating-conic-gradient(#444f7c 0 25%, #3d4870 0 50%) 0 0 / 12px 12px; color: #fff; }
+  .rs { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 4px; align-items: center; margin-bottom: 4px; }
+  .rs span { color: #9aa6d0; font-weight: 400; }
+  .rs button { text-align: center; }
+  .wrap { overflow: auto; max-width: 100%; padding: 4px; background: #151d38; border: 2px solid #4a5680; display: inline-block; }
+  canvas { display: block; image-rendering: pixelated; }
+  #ed { cursor: crosshair; touch-action: none; }
+  #thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
+  .th { text-align: center; padding: 6px; background: #1b2440; border: 2px solid #4a5680; cursor: pointer; }
+  .th:hover { border-color: #8fa3e0; }
+  .th.on { border-color: #e8c447; }
+  .th .cap { margin-top: 4px; color: #9aa6d0; font-weight: 400; font-size: 12px; }
+  .th canvas { margin: 0 auto; }
+  #txt { display: block; width: 100%; height: 420px; box-sizing: border-box; resize: vertical; font: 12px/1.3 Consolas, "Courier New", monospace; color: #e8ecff; background: #1b2440; border: 2px solid #4a5680; padding: 6px; white-space: pre; overflow: auto; }
+  #msg, #hint, #note { min-height: 18px; margin-top: 6px; font-weight: 400; opacity: .8; }
+  #pv { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .mut { color: #9aa6d0; font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <div class="panel"><h2>Animal</h2><div class="btns" id="animals"></div><div id="note"></div></div>
+    <div class="panel">
+      <h2>Colour (the animal's palette)</h2>
+      <div class="sw" id="pal"></div>
+      <div class="btns" id="season"></div>
+    </div>
+    <div class="panel">
+      <h2>Frame size</h2>
+      <div class="rs"><span>top</span><button data-r="top-">− row</button><button data-r="top+">+ row</button></div>
+      <div class="rs"><span>bottom</span><button data-r="bot-">− row</button><button data-r="bot+">+ row</button></div>
+      <div class="rs"><span>left</span><button data-r="left-">− col</button><button data-r="left+">+ col</button></div>
+      <div class="rs"><span>right</span><button data-r="right-">− col</button><button data-r="right+">+ col</button></div>
+      <div id="size" class="mut"></div>
+    </div>
+    <div class="panel">
+      <h2>View</h2>
+      <div class="btns" id="bg"></div>
+      <div class="btns"><button id="letters">Show letters</button><button id="grid" class="on">Grid</button></div>
+      <div class="btns"><button id="undo">Undo (Ctrl+Z)</button><button id="reset">Reset frame</button></div>
+    </div>
+  </div>
+  <div>
+    <div class="panel">
+      <h2 id="ftitle">Frame</h2>
+      <div class="wrap"><canvas id="ed"></canvas></div>
+      <div id="hint">Left click or drag — paint with the chosen colour, right click — erase (transparent). The bottom row is the ground line, the middle column is the animal's x. Sprites look to the right.</div>
+    </div>
+    <div class="panel"><h2>All frames of this animal</h2><div id="thumbs"></div></div>
+  </div>
+  <div>
+    <div class="panel">
+      <h2>Result: paste into js/sprites.js</h2>
+      <div class="btns" id="mode"></div>
+      <div class="btns"><button id="copy">Copy</button></div>
+      <textarea id="txt" spellcheck="false" readonly></textarea>
+      <div id="msg"></div>
+    </div>
+    <div class="panel"><h2>Real size (×1 and ×4, as in the game, without haze)</h2><div id="pv"></div></div>
+  </div>
+</div>
+
+<script src="js/sprites.js"></script>
+<script>
+// Sprite tables come from js/sprites.js (the same constants the game uses). Edits are kept in this browser (localStorage) until you paste the result into sprites.js.
+const KEY = 'kmm.animalLab.v1';
+const ORIG = JSON.parse(JSON.stringify({ ANI_SPR, BIRD_SPR, MOOSE_SPR, FOX_SPR, HEDGE_SPR }));
+const DATA = JSON.parse(JSON.stringify(ORIG));
+const $ = id => document.getElementById(id);
+
+// Palettes: letter → colour, summer / winter (as in aniPal and BIRD_PAL, without the haze that the game adds far away).
+const E = '#111111';
+const PAL = {
+  hare: { summer: { G: '#8a5a36', h: '#a8764a', k: '#2a2018', W: '#f4f4f4', l: '#c9a27a', E }, winter: { G: '#bdb4aa', h: '#cfc6bc', k: '#3a342e', W: '#f4f4f4', l: '#e4ddd4', E } },
+  sq: { summer: { B: '#a84a22', K: '#6e2e14', T: '#d97a3a', b: '#e6c9a0', P: '#7a3a1a', E }, winter: { B: '#8c8a8e', K: '#5e5a5c', T: '#a07a66', b: '#e8e2da', P: '#5e5a5c', E } },
+  fox: { summer: { F: '#d4702a', T: '#b85a1c', W: '#f4efe6', k: '#2a1c14', E }, winter: { F: '#d4702a', T: '#b85a1c', W: '#d8ccb6', k: '#2a1c14', E } },
+  moose: { summer: { B: '#4a3224', b: '#66503f', A: '#b59a6a', E }, winter: { B: '#52463e', b: '#8c7e72', A: '#b59a6a', E } },
+  hedgehog: { summer: { S: '#5a4636', s: '#9a8060', f: '#d9bf9c', k: '#1a1410' }, winter: { S: '#5a4636', s: '#9a8060', f: '#d9bf9c', k: '#1a1410' } },
+};
+for (const sp of ['sparrow', 'tit', 'bullfinch', 'crow', 'magpie', 'jackdaw']) PAL[sp] = { summer: BIRD_PAL[sp], winter: BIRD_PAL[sp] };
+
+const small = ['sit', 'peck', 'flyA', 'flyB', 'fold'], smallCap = { sit: 'perched', peck: 'pecking', flyA: 'flying, wings up', flyB: 'flying, wings down', fold: 'flying, wings folded' };
+const bigCap = p => ({ [p + 'A']: 'wings up', [p + 'B']: 'wings down', [p + 'G']: 'gliding', [p + 'S']: 'perched' });
+const ANIMALS = [
+  { id: 'hare', name: '🐇 Hare', table: 'ANI_SPR', frames: ['haA', 'haB', 'haS', 'hmA', 'hmB'], cap: { haA: 'near: in the air', haB: 'near: on the ground', haS: 'near: sitting up', hmA: 'far: in the air', hmB: 'far: on the ground' } },
+  { id: 'sq', name: '🐿️ Squirrel', table: 'ANI_SPR', frames: ['sqA', 'sqB', 'upA', 'upB'], cap: { sqA: 'run / jump', sqB: 'sitting / pause', upA: 'on the trunk 1', upB: 'on the trunk 2' } },
+  { id: 'hedgehog', name: '🦔 Hedgehog', table: 'HEDGE_SPR', frames: ['a'], cap: { a: 'the only frame' } },
+  { id: 'fox', name: '🦊 Fox', table: 'FOX_SPR', frames: ['g1', 'g2', 'g3', 'arc', 'dive'], cap: { g1: 'trot 1', g2: 'trot 2 / standing', g3: 'trot 3', arc: 'jump: curled', dive: 'jump: nose down' } },
+  { id: 'moose', name: '🦌 Moose', table: 'MOOSE_SPR', frames: ['stand', 'walkA', 'walkB'], cap: { stand: 'standing', walkA: 'step 1', walkB: 'step 2' }, note: 'The two top rows are the antlers: the game cuts them off for cows and for late autumn and winter.' },
+  { id: 'sparrow', name: '🐤 Sparrow', table: 'BIRD_SPR', frames: small, cap: smallCap, note: 'These five frames are shared by the sparrow, the tit and the bullfinch: only the colours differ.' },
+  { id: 'tit', name: '🐤 Tit', table: 'BIRD_SPR', frames: small, cap: smallCap, note: 'These five frames are shared by the sparrow, the tit and the bullfinch: only the colours differ.' },
+  { id: 'bullfinch', name: '🐤 Bullfinch', table: 'BIRD_SPR', frames: small, cap: smallCap, note: 'These five frames are shared by the sparrow, the tit and the bullfinch: only the colours differ.' },
+  { id: 'crow', name: '🐦 Crow', table: 'BIRD_SPR', frames: ['crowA', 'crowB', 'crowG', 'crowS'], cap: bigCap('crow') },
+  { id: 'magpie', name: '🐦 Magpie', table: 'BIRD_SPR', frames: ['magA', 'magB', 'magG', 'magS'], cap: bigCap('mag') },
+  { id: 'jackdaw', name: '🐦 Jackdaw', table: 'BIRD_SPR', frames: ['jA', 'jB', 'jG', 'jS'], cap: { jA: 'wings up', jB: 'wings down', jG: 'gliding', jS: 'perched' } },
+];
+const BGS = [['checker', 'Transparent'], ['summer', 'Grass'], ['winter', 'Snow']], GROUND = { summer: '#4f8d36', winter: '#e6edf4' };
+const MODES = [['table', 'This table'], ['changed', 'Only changed frames'], ['all', 'All tables']];
+
+// load saved edits, make every frame rectangular
+try { const sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (const t in sv) if (DATA[t]) for (const f in sv[t]) if (DATA[t][f]) DATA[t][f] = sv[t][f]; } catch (e) {}
+for (const t in DATA) for (const f in DATA[t]) { const w = Math.max(...DATA[t][f].map(r => r.length)); DATA[t][f] = DATA[t][f].map(r => r.padEnd(w, '.')); }
+
+const cur = { animal: 'hare', frame: 'haA', letter: 'G', season: 'summer', bg: 'checker', letters: false, grid: true, mode: 'table' };
+const animal = () => ANIMALS.find(a => a.id === cur.animal), pal = () => PAL[cur.animal][cur.season];
+const rowsOf = (t = animal().table, f = cur.frame) => DATA[t][f];
+const changed = (t, f) => JSON.stringify(DATA[t][f]) !== JSON.stringify(ORIG[t][f]);
+const undo = [];
+const snap = () => { undo.push({ t: animal().table, f: cur.frame, rows: rowsOf().slice() }); if (undo.length > 200) undo.shift(); };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(DATA)); } catch (e) {} };
+
+function paintSprite(g, rows, p, scale, ox, oy, bg) {
+  const w = rows[0].length, h = rows.length;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    if (bg === 'checker') { g.fillStyle = (i + j) % 2 ? '#3d4870' : '#444f7c'; } else g.fillStyle = GROUND[bg];
+    g.fillRect(ox + i * scale, oy + j * scale, scale, scale);
+    const c = rows[j][i]; if (c === '.') continue;
+    g.fillStyle = p[c] || '#ff00ff'; g.fillRect(ox + i * scale, oy + j * scale, scale, scale);
+  }
+}
+function miniCanvas(rows, scale, bg) {
+  const w = rows[0].length, h = rows.length, cv = document.createElement('canvas');
+  cv.width = w * scale; cv.height = h * scale; paintSprite(cv.getContext('2d'), rows, pal(), scale, 0, 0, bg); return cv;
+}
+
+const ed = $('ed'), eg = ed.getContext('2d');
+function drawEditor() {
+  const rows = rowsOf(), w = rows[0].length, h = rows.length, Z = Math.max(8, Math.min(40, Math.floor(560 / Math.max(w, h * 1.3))));
+  ed.width = w * Z; ed.height = h * Z; ed.style.width = w * Z + 'px'; ed.style.height = h * Z + 'px';
+  paintSprite(eg, rows, pal(), Z, 0, 0, cur.bg);
+  if (cur.grid) { eg.strokeStyle = 'rgba(0,0,0,0.28)'; eg.lineWidth = 1; eg.beginPath(); for (let i = 0; i <= w; i++) { eg.moveTo(i * Z + .5, 0); eg.lineTo(i * Z + .5, h * Z); } for (let j = 0; j <= h; j++) { eg.moveTo(0, j * Z + .5); eg.lineTo(w * Z, j * Z + .5); } eg.stroke(); }
+  // the ground line and the middle column
+  eg.strokeStyle = 'rgba(255,230,120,0.9)'; eg.setLineDash([4, 3]); eg.beginPath(); eg.moveTo(0, h * Z - 1); eg.lineTo(w * Z, h * Z - 1); const mx = Math.floor(w / 2) * Z + Z / 2; eg.moveTo(mx, 0); eg.lineTo(mx, 6); eg.stroke(); eg.setLineDash([]);
+  if (cur.letters) { eg.font = '700 ' + Math.floor(Z * 0.5) + 'px Consolas, monospace'; eg.textAlign = 'center'; eg.textBaseline = 'middle'; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const c = rows[j][i]; if (c === '.') continue; eg.fillStyle = '#fff'; eg.strokeStyle = '#000'; eg.lineWidth = 3; eg.strokeText(c, i * Z + Z / 2, j * Z + Z / 2); eg.fillText(c, i * Z + Z / 2, j * Z + Z / 2); } }
+  $('size').textContent = 'Frame: ' + w + ' × ' + h + ' px';
+}
+function buildAnimals() {
+  const box = $('animals'); box.innerHTML = '';
+  for (const a of ANIMALS) { const b = document.createElement('button'); b.textContent = a.name; b.classList.toggle('on', a.id === cur.animal); b.onclick = () => { cur.animal = a.id; cur.frame = a.frames[0]; cur.letter = firstLetter(); refresh(); }; box.appendChild(b); }
+  $('note').textContent = animal().note || '';
+}
+const firstLetter = () => Object.keys(pal())[0];
+function buildPalette() {
+  const box = $('pal'); box.innerHTML = '';
+  const er = document.createElement('button'); er.className = 'erase' + (cur.letter === '.' ? ' on' : ''); er.textContent = '∅'; er.title = 'Eraser (transparent)'; er.onclick = () => { cur.letter = '.'; buildPalette(); }; box.appendChild(er);
+  for (const [l, c] of Object.entries(pal())) {
+    const b = document.createElement('button'); b.style.background = c; b.textContent = l; b.title = l + ' ' + c; b.classList.toggle('on', cur.letter === l);
+    const lum = parseInt(c.slice(1, 3), 16) * .3 + parseInt(c.slice(3, 5), 16) * .6 + parseInt(c.slice(5), 16) * .1; b.style.color = lum > 150 ? '#000' : '#fff'; b.style.textShadow = 'none';
+    b.onclick = () => { cur.letter = l; buildPalette(); }; box.appendChild(b);
+  }
+}
+function buildToggles() {
+  const s = $('season'); s.innerHTML = '';
+  for (const [v, t] of [['summer', '🌻 Summer colours'], ['winter', '⛄ Winter colours']]) { const b = document.createElement('button'); b.textContent = t; b.classList.toggle('on', cur.season === v); b.onclick = () => { cur.season = v; if (!pal()[cur.letter] && cur.letter !== '.') cur.letter = firstLetter(); refresh(); }; s.appendChild(b); }
+  const bg = $('bg'); bg.innerHTML = '';
+  for (const [v, t] of BGS) { const b = document.createElement('button'); b.textContent = t; b.classList.toggle('on', cur.bg === v); b.onclick = () => { cur.bg = v; refresh(); }; bg.appendChild(b); }
+  const m = $('mode'); m.innerHTML = '';
+  for (const [v, t] of MODES) { const b = document.createElement('button'); b.textContent = t; b.classList.toggle('on', cur.mode === v); b.onclick = () => { cur.mode = v; buildToggles(); buildText(); }; m.appendChild(b); }
+  $('letters').classList.toggle('on', cur.letters); $('grid').classList.toggle('on', cur.grid);
+}
+function buildThumbs() {
+  const box = $('thumbs'); box.innerHTML = '';
+  for (const f of animal().frames) {
+    const d = document.createElement('div'); d.className = 'th' + (f === cur.frame ? ' on' : '');
+    d.appendChild(miniCanvas(rowsOf(animal().table, f), 6, cur.bg));
+    const c = document.createElement('div'); c.className = 'cap'; c.textContent = f + (changed(animal().table, f) ? ' •' : '') + ' — ' + (animal().cap[f] || ''); d.appendChild(c);
+    d.onclick = () => { cur.frame = f; refresh(); }; box.appendChild(d);
+  }
+  $('ftitle').textContent = 'Frame ' + cur.frame + ' — ' + (animal().cap[cur.frame] || '');
+}
+function buildPreview() {
+  const box = $('pv'); box.innerHTML = '';
+  for (const s of [1, 4]) { const cv = miniCanvas(rowsOf(), 1, cur.bg); cv.style.width = cv.width * s + 'px'; cv.style.height = cv.height * s + 'px'; box.appendChild(cv); }
+}
+const line = (k, rows) => '  ' + k + ': [' + rows.map(r => "'" + r + "'").join(', ') + '],';
+const tableText = t => 'const ' + t + ' = {\n' + Object.keys(DATA[t]).map(k => line(k, DATA[t][k])).join('\n') + '\n};';
+function buildText() {
+  let out;
+  if (cur.mode === 'table') out = tableText(animal().table);
+  else if (cur.mode === 'all') out = Object.keys(DATA).map(tableText).join('\n\n');
+  else {
+    const parts = [];
+    for (const t in DATA) { const ls = Object.keys(DATA[t]).filter(f => changed(t, f)).map(f => line(f, DATA[t][f])); if (ls.length) parts.push('// ' + t + '\n' + ls.join('\n')); }
+    out = parts.length ? parts.join('\n\n') : '// nothing changed yet';
+  }
+  $('txt').value = out;
+}
+function refresh() { buildAnimals(); buildPalette(); buildToggles(); buildThumbs(); drawEditor(); buildPreview(); buildText(); save(); }
+
+// painting
+let painting = null;
+function cell(e) { const r = ed.getBoundingClientRect(), rows = rowsOf(); return [Math.floor((e.clientX - r.left) / r.width * rows[0].length), Math.floor((e.clientY - r.top) / r.height * rows.length)]; }
+function put(e) {
+  const [i, j] = cell(e), rows = rowsOf(); if (i < 0 || j < 0 || i >= rows[0].length || j >= rows.length) return;
+  const ch = painting; if (rows[j][i] === ch) return;
+  rows[j] = rows[j].slice(0, i) + ch + rows[j].slice(i + 1);
+  drawEditor(); buildThumbs(); buildPreview(); buildText(); save();
+}
+ed.addEventListener('contextmenu', e => e.preventDefault());
+ed.addEventListener('pointerdown', e => { e.preventDefault(); ed.setPointerCapture(e.pointerId); snap(); painting = e.button === 2 ? '.' : cur.letter; put(e); });
+ed.addEventListener('pointermove', e => { if (painting !== null) put(e); });
+ed.addEventListener('pointerup', () => { painting = null; });
+
+// resizing the frame
+document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+  const t = animal().table, rows = rowsOf().slice(), w = rows[0].length, op = b.dataset.r; snap();
+  let r = rows;
+  if (op === 'top+') r = ['.'.repeat(w)].concat(rows); else if (op === 'bot+') r = rows.concat(['.'.repeat(w)]);
+  else if (op === 'top-' && rows.length > 1) r = rows.slice(1); else if (op === 'bot-' && rows.length > 1) r = rows.slice(0, -1);
+  else if (op === 'left+') r = rows.map(x => '.' + x); else if (op === 'right+') r = rows.map(x => x + '.');
+  else if (op === 'left-' && w > 1) r = rows.map(x => x.slice(1)); else if (op === 'right-' && w > 1) r = rows.map(x => x.slice(0, -1));
+  DATA[t][cur.frame] = r; refresh();
+});
+$('letters').onclick = () => { cur.letters = !cur.letters; buildToggles(); drawEditor(); };
+$('grid').onclick = () => { cur.grid = !cur.grid; buildToggles(); drawEditor(); };
+function doUndo() { const u = undo.pop(); if (!u) return; DATA[u.t][u.f] = u.rows; const a = ANIMALS.find(x => x.table === u.t && x.frames.includes(u.f)); if (a && !(animal().table === u.t && animal().frames.includes(u.f))) { cur.animal = a.id; cur.letter = firstLetter(); } cur.frame = u.f; refresh(); }
+$('undo').onclick = doUndo;
+addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); } });
+$('reset').onclick = () => { snap(); DATA[animal().table][cur.frame] = ORIG[animal().table][cur.frame].slice(); refresh(); };
+$('copy').onclick = () => {
+  const ta = $('txt'); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  const say = t => { $('msg').textContent = t; };
+  if (ok) say('Copied.'); else if (navigator.clipboard) navigator.clipboard.writeText(ta.value).then(() => say('Copied.'), () => say('Failed: the text is selected, press Ctrl+C.')); else say('Failed: the text is selected, press Ctrl+C.');
+};
+cur.letter = firstLetter();
+refresh();
+</script>
+</body>
+</html>

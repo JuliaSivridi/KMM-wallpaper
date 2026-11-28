@@ -5,7 +5,10 @@ const ANI = [];
 const FAUNA_GROUP_GAP = 450;
 const winterE = E => E.season === 'winter';
 const FAUNA = {
-  animals: [{ id: 'hare', icon: '🐇', name: 'Hare', gap: 900, run: () => spawnHare() }, { id: 'sq', icon: '🐿️', name: 'Squirrel', gap: 900, run: () => spawnSquirrel() }],
+  animals: [{ id: 'hare', icon: '🐇', name: 'Hare', gap: 900, run: () => spawnHare() }, { id: 'sq', icon: '🐿️', name: 'Squirrel', gap: 900, run: () => spawnSquirrel() },
+            { id: 'hedgehog', icon: '🦔', name: 'Hedgehog', gap: 3600, when: 'evening', can: E => E.season !== 'winter' && E.season !== 'late' && E.h >= E.ss - 0.5 && E.h < E.ss + 1.5, run: () => spawnHedgehog() },
+            { id: 'fox', icon: '🦊', name: 'Fox', gap: 5400, run: E => spawnFox(E) },
+            { id: 'moose', icon: '🦌', name: 'Moose', gap: 10800, run: () => spawnMoose() }],
   birds: [{ id: 'sparrow', icon: '🐤', name: 'Sparrow', gap: E => winterE(E) ? 3913 : 2446, run: () => spawnBirds('small', 'sparrow') },
           { id: 'tit', icon: '🐤', name: 'Tit', gap: E => winterE(E) ? 3913 : 2446, run: () => spawnBirds('small', 'tit') },
           { id: 'bullfinch', icon: '🐤', name: 'Bullfinch', gap: E => winterE(E) ? 1957 : 4891, run: () => spawnBirds('small', 'bullfinch') },
@@ -17,11 +20,14 @@ const faunaOn = id => evLevel(id) !== 'off';
 // Species switched off while already on the scene are removed immediately.
 function purgeFauna() { for (const a of ANI) if (!faunaOn(a.kind === 'bird' ? a.sp : a.kind)) a.dead = true; }
 // In the test mode "fast" all animals together (and all birds together) appear about every 7 seconds: every species keeps its share.
-const fastOf = gap => E => 7 * (typeof gap === 'function' ? gap(E) : gap) / FAUNA_GROUP_GAP;
+const fastOf = gap => E => EV_FAST_ALL ? 7 * (typeof gap === 'function' ? gap(E) : gap) / FAUNA_GROUP_GAP : 7;   // ?events=fast: every species keeps its share; ?<id>=fast: that one every ~7 s
 for (const grp of ['animals', 'birds'])
-  for (const d of FAUNA[grp]) defineEvent({ id: d.id, group: grp, icon: d.icon, name: d.name, gap: d.gap, fast: fastOf(d.gap), can: E => !E.wet && (grp === 'animals' || E.d > 0.25), run: d.run });
+  for (const d of FAUNA[grp]) defineEvent({ id: d.id, group: grp, icon: d.icon, name: d.name, gap: d.gap, when: d.when, fast: fastOf(d.gap), can: E => !E.wet && (grp === 'animals' || E.d > 0.25) && (!d.can || d.can(E)), run: d.run });
 function aniPal(kind, E, dep) {
   const w = E.season === 'winter', hz = dep >= 1 ? 0 : hazeOf(dep) * 0.6, fog = c => hz ? mixHex(c, E.S.hillNear, hz) : c;
+  if (kind === 'moose') return { B: fog(w ? '#52463e' : '#4a3224'), b: fog(w ? '#8c7e72' : '#66503f'), A: fog('#b59a6a'), E: '#111111' };
+  if (kind === 'fox') return { F: fog('#d4702a'), T: fog('#b85a1c'), W: fog(w ? '#d8ccb6' : '#f4efe6'), k: fog('#2a1c14'), E: '#111111' };   // the same red in winter; the white tip is a bit darker so it shows on snow
+  if (kind === 'hedgehog') return { S: '#5a4636', s: '#9a8060', f: '#d9bf9c', k: '#1a1410' };
   if (kind === 'sq') return { B: fog(w ? '#8c8a8e' : '#a84a22'), K: fog(w ? '#5e5a5c' : '#6e2e14'), T: fog(w ? '#a07a66' : '#d97a3a'), b: fog(w ? '#e8e2da' : '#e6c9a0'), P: fog(w ? '#5e5a5c' : '#7a3a1a'), E: '#111111' };
   return { G: fog(w ? '#bdb4aa' : '#8a5a36'), h: fog(w ? '#cfc6bc' : '#a8764a'), k: fog(w ? '#3a342e' : '#2a2018'), W: '#f4f4f4', l: fog(w ? '#e4ddd4' : '#c9a27a'), E: '#111111' };
 }
@@ -36,6 +42,78 @@ function spawnSquirrel() {
   if (!trees.length) return;
   const tr = trees[Math.floor(Math.random() * trees.length)], left = tr.x < W / 2;
   ANI.push({ kind: 'sq', x: left ? -8 : W + 8, y: tr.base, dir: left ? 1 : -1, tree: tr, state: 'toTree', t: 0, ph: 0, jumps: 0 });
+}
+// Moose: far away in the forest, walks slowly from edge to edge, stops once or twice to look around (bulls have antlers, except in late autumn and winter).
+function spawnMoose() {
+  if (ANI.some(a => a.kind === 'moose')) return;
+  const fromLeft = Math.random() < 0.5, y = Math.round(rand(131, 136)), n = 1 + Math.floor(Math.random() * 2);
+  ANI.push({ kind: 'moose', x: fromLeft ? -9 : W + 9, y, dir: fromLeft ? 1 : -1, speed: rand(6, 8), ph: 0, state: 'walk', t: 0, bull: Math.random() < 0.65, dep: (y - 126) / 26, halts: Array.from({ length: n }, () => rand(W * 0.2, W * 0.8)) });
+}
+function updateMoose(a, dt) {
+  if (a.state === 'walk') {
+    a.x += a.dir * a.speed * dt;
+    const i = a.halts.findIndex(h => (a.x - h) * a.dir >= 0);
+    if (i >= 0) { a.halts.splice(i, 1); a.state = 'stand'; a.t = rand(3, 6); }
+  } else { a.t -= dt; if (a.t <= 0) a.state = 'walk'; }
+  if (a.x < -22 || a.x > W + 22) a.dead = true;
+}
+// Fox: trots evenly through the far forest. In winter it also hunts mice: stops and listens, jumps in an arc, dives nose-first into the snow,
+// the rump and tail stick out, then it comes out rump first, body, head. In other seasons it only sometimes stops for a moment and looks around.
+function spawnFox(E) {
+  if (ANI.some(a => a.kind === 'fox')) return;
+  const fromLeft = Math.random() < 0.5, winter = E.season === 'winter', y = Math.round(rand(131, 138));
+  const n = winter ? 1 + (Math.random() < 0.5 ? 1 : 0) : (Math.random() < 0.4 ? 1 : 0);
+  ANI.push({ kind: 'fox', x: fromLeft ? -9 : W + 9, y, dir: fromLeft ? 1 : -1, speed: rand(22, 28), ph: 0, state: 'run', t: 0, lift: 0, mouse: winter, dep: (y - 126) / 26, hunts: Array.from({ length: n }, () => rand(W * 0.2, W * 0.8)) });
+}
+function updateFox(a, dt) {
+  a.t += dt; a.lift = 0;
+  if (a.state === 'run') {
+    a.x += a.dir * a.speed * dt;
+    const i = a.hunts.findIndex(h => (a.x - h) * a.dir >= 0);
+    if (i >= 0) { a.hunts.splice(i, 1); a.state = 'listen'; a.t = 0; a.stopFor = rand(1.3, 2.5); }
+  } else if (a.state === 'listen') {
+    if (a.t >= a.stopFor) { a.t = 0; if (a.mouse) { a.state = 'jump'; a.jx0 = a.x; } else a.state = 'run'; }
+  } else if (a.state === 'jump') {
+    const k = Math.min(1, a.t / 0.7); a.x = a.jx0 + a.dir * 7 * k; a.lift = Math.sin(k * Math.PI) * 5;
+    if (k >= 1) { a.state = 'dig'; a.t = 0; }
+  } else if (a.state === 'dig') { if (a.t >= 1.1) { a.state = 'up'; a.t = 0; } }
+  else if (a.state === 'up') { if (a.t >= 1.35) { a.state = 'run'; a.t = 0; } }
+  if (a.x < -22 || a.x > W + 22) a.dead = true;
+}
+const FOX_PUFF = [[-2, -1], [2, -2], [0, -3], [3, -1], [-1, -4], [1, -5]];
+function drawFox(g, a, E) {
+  const pal = aniPal('fox', E, a.dep), S = FOX_SPR;
+  let rows = S.g2, lift = 0, hide = 0;   // hide — how many bottom rows are under the snow
+  if (a.state === 'run') rows = [S.g1, S.g2, S.g3, S.g2][Math.floor(a.ph * 9) % 4];
+  else if (a.state === 'jump') { const k = a.t / 0.7; rows = k < 0.2 ? S.g1 : k < 0.7 ? S.arc : S.dive; lift = Math.round(a.lift); }
+  else if (a.state === 'dig') { rows = S.dive; hide = a.t < 0.06 ? 0 : a.t < 0.14 ? 2 : a.t < 0.24 ? 4 : 5; }
+  else if (a.state === 'up' && a.t < 0.75) { rows = S.dive; hide = [5, 3, 1][Math.floor(a.t / 0.25)]; }   // rump and tail, then the body, then the head
+  const w = rows[0].length, h = rows.length, left = Math.round(a.x) - Math.floor(w / 2), top = Math.round(a.y) - h - lift + hide;
+  for (let j = 0; j < h - hide; j++) for (let i = 0; i < w; i++) { const c = rows[j][i]; if (c === '.') continue; R(g, a.dir < 0 ? left + w - 1 - i : left + i, top + j, 1, 1, pal[c]); }
+  const pk = a.state === 'dig' || a.state === 'up' ? a.t / 0.6 : 2;   // a puff of snow where the nose goes in and where it comes out
+  if (pk < 1) for (const [dx, dy] of FOX_PUFF) R(g, a.x + a.dir * 3 + dx * (0.6 + pk), a.y + dy * (0.4 + pk * 0.8), 1, 1, rgba('#f4f7fb', 1 - pk));
+}
+// Hedgehog: only by the cabin, in the evening twilight (around sunset). Comes in from the left edge, walks to and fro in front of the cabin
+// (stopping to sniff), and leaves the same way. Not afraid of people.
+const hedgeZone = () => ({ x0: L.cabin.x + 2, x1: L.cabin.x + 44 });
+function spawnHedgehog() {
+  if (ANI.some(a => a.kind === 'hedgehog')) return;
+  const z = hedgeZone();
+  ANI.push({ kind: 'hedgehog', x: -6, y: Math.round(rand(146, 149)), dir: 1, state: 'walk', ph: 0, t: 0, legs: 3 + Math.floor(Math.random() * 4), target: rand(z.x0, z.x1), dep: 1 });
+}
+function updateHedgehog(a, dt) {
+  if (a.state === 'walk') {
+    const dx = a.target - a.x, st = 6 * dt;
+    if (Math.abs(dx) <= st) { a.x = a.target; if (a.leaving) { a.dead = true; return; } a.state = 'sniff'; a.t = rand(1.5, 4); }
+    else { a.x += Math.sign(dx) * st; a.dir = dx > 0 ? 1 : -1; }
+  } else {
+    a.t -= dt;
+    if (a.t <= 0) {
+      if (--a.legs <= 0) { a.leaving = true; a.target = -8; }
+      else { const z = hedgeZone(); let x = rand(z.x0, z.x1); for (let k = 0; k < 10 && Math.abs(x - a.x) < 12; k++) x = rand(z.x0, z.x1); a.target = x; }
+      a.state = 'walk';
+    }
+  }
 }
 function smallPerch() {
   if (Math.random() < 0.25) { const y = Math.round(rand(150, 170)); return { x: rand(W * 0.15, W * 0.95), y, ground: true }; }
@@ -136,6 +214,9 @@ function updateAnimals(dt, E) {
       if (a.x < -20 || a.x > W + 20) a.dead = true;
       continue;
     }
+    if (a.kind === 'moose') { updateMoose(a, dt); continue; }
+    if (a.kind === 'fox') { updateFox(a, dt); continue; }
+    if (a.kind === 'hedgehog') { updateHedgehog(a, dt); continue; }
     const t = a.tree;
     if (a.state === 'toTree' || a.state === 'away') {
       a.x += a.dir * hopStep(a, dt, SQ_GROUND);
@@ -182,6 +263,16 @@ function drawAnimal(g, a, E) {
       rows.forEach((row, j) => { for (let i = 0; i < w; i++) { const c = row[i]; if (c === '.') continue; g.fillStyle = pal[c]; g.fillRect(a.dir < 0 ? left + w - 1 - i : left + i, top + j, 1, 1); } });
       return;
     }
+  } else if (a.kind === 'moose') {
+    pal = aniPal('moose', E, a.dep);
+    const horns = a.bull && E.season !== 'winter' && E.season !== 'late', S = MOOSE_SPR;
+    rows = a.state === 'walk' ? [S.walkA, S.stand, S.walkB, S.stand][Math.floor(a.ph / 0.4) % 4] : S.stand;
+    if (!horns) rows = rows.slice(2);   // the two top rows are the antlers
+  } else if (a.kind === 'fox') {
+    drawFox(g, a, E); return;
+  } else if (a.kind === 'hedgehog') {
+    pal = aniPal('hedgehog', E, 1);
+    rows = HEDGE_SPR.a;
   } else if (a.kind === 'hare') {
     pal = aniPal('hare', E, a.dep);
     const p = (a.ph * 4.5) % 1, air = p > 0.15 && p < 0.85;

@@ -2,14 +2,15 @@
 // Pressed — it is there, released — it is not. The button of the holiday switches everything off at once (the decorations keep their own state and come back with it);
 // the costumes (🎭) do not depend on the decorations. The ghosts are a random event: instead of a switch they have four level buttons ❌ 🚶 🏃 🚴, like the animals.
 // Opens to the right of the scene panel. Changes are applied on "Done"; "Cancel" closes the panel without changes.
-let _holPanel = null, _holDesc = null;
+let _holPanel = null, _holDesc = null, _holOff = null;
 function closeHolidaysPanel() {
   if (!_holPanel) return;
+  if (_holOff) { _holOff(); _holOff = null; }
   _holPanel.remove(); _holPanel = null;
   SidePanel.closed(_holDesc); _holDesc = null;
 }
 function openHolidaysPanel() {
-  const draft = Object.assign({}, HOLIDAY_OFF), lv = {};   // draft — switches; lv — levels of the events (ghosts)
+  const draft = Object.assign({}, HOLIDAY_OFF), lv = {}, evUpd = [];   // draft — switches; lv — levels of the events (ghosts)
   for (const h of HOLIDAYS) for (const d of h.decor) if (d.event) lv[d.event] = evLevel(d.event);
   const desc = { cancel: closeHolidaysPanel };
   SidePanel.open(desc, 'ui'); _holDesc = desc;
@@ -27,11 +28,11 @@ function openHolidaysPanel() {
     for (const d of h.decor) {
       if (d.event) {   // levels
         const row = document.createElement('div'); row.className = 'lv-row';
-        const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = d.icon + ' ' + d.name; row.appendChild(nm);
+        const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = d.icon + ' ' + d.name; const ev = document.createElement('small'); ev.className = 'ev'; nm.appendChild(ev); const showEv = () => { ev.textContent = evEveryText(d.event, lv[d.event], env()); }; evUpd.push(showEv); showEv(); row.appendChild(nm);
         const btns = document.createElement('div'); btns.className = 'lv-btns';
         for (const [l, icon, label] of EV_LEVELS) {
           const b = document.createElement('button'); b.textContent = icon; b.title = label; b.classList.toggle('on', lv[d.event] === l);
-          b.addEventListener('click', () => { lv[d.event] = l; btns.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+          b.addEventListener('click', () => { lv[d.event] = l; showEv(); btns.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
           btns.appendChild(b);
         }
         row.appendChild(btns); sub.appendChild(row);
@@ -45,6 +46,8 @@ function openHolidaysPanel() {
     sync(); list.appendChild(grp);
   }
   document.body.appendChild(root);
+  const refresh = () => evUpd.forEach(q => q()), scene = document.getElementById('ui');
+  scene.addEventListener('click', refresh); _holOff = () => scene.removeEventListener('click', refresh);
   root.querySelector('.cancel').onclick = closeHolidaysPanel;
   root.querySelector('.ok').onclick = () => { HOLIDAY_OFF = draft; saveHolidayOff(); setEvLevels(lv); closeHolidaysPanel(); };
   const r = document.getElementById('ui').getBoundingClientRect();

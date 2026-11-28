@@ -202,7 +202,7 @@ function updateGhosts(dt, E) {
   for (let i = GHOSTS.length - 1; i >= 0; i--) { const o = GHOSTS[i]; if ((o.dir > 0 && o.x > W + 12) || (o.dir < 0 && o.x < -12)) GHOSTS.splice(i, 1); }
 }
 // The ghosts are an event of the registry (js/events.js): only while Halloween lasts, in the dusk and at night, without a downpour; every 1–3 minutes, the first one soon after the start.
-defineEvent({ id: 'ghosts', group: 'holidays', icon: '👻', name: 'Ghosts', gap: 120, spread: [0.5, 1.5], first: 8, on: E => !!E.hal, can: E => !E.wet && E.d < 0.7, run: spawnGhosts });
+defineEvent({ id: 'ghosts', group: 'holidays', icon: '👻', name: 'Ghosts', gap: 120, when: 'at night', spread: [0.5, 1.5], first: 8, on: E => !!E.hal, can: E => !E.wet && E.d < 0.7, run: spawnGhosts });
 function drawGhost(g, o, E) {
   const rows = GHOST_SPR[Math.floor(T * 3 + o.ph) % 2], hz = hazeOf(clamp((o.y - 126) / 26, 0, 1)) * 0.5;
   const pal = { G: mixHex(GHOST_COL[o.c], E.S.hillNear, hz), W: '#ffffff', B: '#2a2ae0' };

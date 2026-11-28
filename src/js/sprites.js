@@ -5,7 +5,7 @@ const ANI_SPR = {
   upB: ['..Bb..', '.KEBb.', '..BBBb', '...BBb', '.T.BB.', 'TT..B.', 'TTTTT.', '.TTT..'],
   haA: ['....kk...', '.....hh..', '......GEG', 'WGGGGGGGl', '.GGGGGGl.', 'lG....l..', 'l........'],
   haB: ['....kk...', '.....hh..', '......GEG', '.WGGGGGGl', '..GGGGGl.', '..GlGl...', '...l.l...'],
-  haS: ['....k.k.', '....h.h.', '....GGG.', '...GGEG.', '...GGGl.', '..GGGl..', '.GGGGl..', 'WGGGll..', '.ll.l...'],
+  haS: ['....k.k.', '....h.h.', '....GGG.', '....GEG.', '...GGGl.', '..GGGl..', '.GGGGl..', 'WGGGll..', '.ll.l...'],
   hmA: ['....k..', '....GEG', '.WGGGGl', '.GGGG..', 'l...l..'],
   hmB: ['....k..', '....GEG', '..WGGGl', '..GGG..', '..ll...'],
 };
@@ -35,4 +35,22 @@ const BIRD_PAL = {
   crow:     { t: '#18181c', g: '#8d9096', u: '#8d9096', f: '#1c1c22', F: '#1c1c22', h: '#18181c', k: '#6a6a72', l: '#18181c' },
   magpie:   { t: '#14161c', g: '#14161c', u: '#f2f2f2', f: '#14161c', F: '#eef0f4', h: '#14161c', k: '#6a6a72', l: '#18181c' },
   jackdaw:  { t: '#141418', s: '#2a2a32', f: '#0e0e12', k: '#6a6a72', l: '#18181c' },
+};
+// Moose (seen far away): the two top rows are the antlers, the game cuts them off for cows and for late autumn and winter. Fox: a trot (g1, g2 — standing, g3),
+// for mousing the arc at the top of the jump and the dive nose-first. Hedgehog: a smooth teardrop body with a line of spines on top, no legs. All face right;
+// the bottom row is the ground line, the middle column is the animal's x.
+const MOOSE_SPR = {
+  stand: ['........AA..A.A', '.........AAAAA.', '..BBBB....BBB..', '.BBBBBBBBBBBEB.', '.BBBBBBBBBBBBBB', '.BBBBBBBBBB.BBB', '.BBBBBBBBB.....', '..BB...BB......', '..BB...BB......', '..bb...bb......', '..bb...bb......', '..bb...bb......'],
+  walkA: ['........AA..A.A', '.........AAAAA.', '..BBBB....BBB..', '.BBBBBBBBBBBEB.', '.BBBBBBBBBBBBBB', '.BBBBBBBBBB.BBB', '.BBBBBBBBB.....', '.B.B...B.B.....', '.B.B...B.B.....', '.b.b...b.b.....', '.b.b...b.b.....', '.b.b...b.b.....'],
+  walkB: ['........AA..A.A', '.........AAAAA.', '..BBBB....BBB..', '.BBBBBBBBBBBEB.', '.BBBBBBBBBBBBBB', '.BBBBBBBBBB.BBB', '.BBBBBBBBB.....', '..B.B.B.B......', '..B.B.B.B......', '..b.b.b.b......', '..b.b.b.b......', '..b.b.b.b......'],
+};
+const FOX_SPR = {
+  g1: ['.........k.k.', '..TTT....FFF.', 'WTTTTFFFFFFE.', 'WWTTTFFFFFFWk', '....k.k.k.k..', '...k..k..k.k.'],
+  g2: ['.........k.k.', '..TTT....FFF.', 'WTTTTFFFFFFE.', 'WWTTTFFFFFFWk', '.....kk.kk...', '.....kk.kk...'],
+  g3: ['.........k.k.', '..TTT....FFF.', 'WTTTTFFFFFFE.', 'WWTTTFFFFFFWk', '....k.k.k.k..', '.....k.k.k.k.'],
+  arc: ['.....FF.....', '....FFFF....', '..TFFFFFF...', '.TTFF..FFF..', 'TT.kk..kFFF.', 'WW.kk..k.WEk', '.........k..'],
+  dive: ['WW.......', 'TTT......', '.TFFF....', '..FFFF...', '..kFFFF..', '..k.FFF..', '....kFFF.', '....kFEk.'],
+};
+const HEDGE_SPR = {
+  a: ['.ssss..', 'ssSSSS.', 'sSSSSsk'],
 };

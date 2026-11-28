@@ -23,6 +23,8 @@ function updateTracks(dt, E) {
   for (const a of ANI) {
     if (a.kind === 'hare') trackSteps(a, a.state === 'run', 5, a.front ? 2 : 1, a.dir * 3, false);
     else if (a.kind === 'sq') trackSteps(a, (a.state === 'toTree' || a.state === 'away') && a.moving, 4, 1, a.dir * 3, false);
+    else if (a.kind === 'fox') trackSteps(a, a.state === 'run', 4, 1, a.dir * 4, false);
+    else if (a.kind === 'moose') trackSteps(a, a.state === 'walk', 6, 1, a.dir * 5, false);
   }
   // stripe behind the ball: two rows along the path it traveled
   if (SNOW && SNOW.ballX != null && SNOW.v < 3) {

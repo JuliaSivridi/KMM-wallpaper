@@ -11,6 +11,7 @@
 //   spread  — optional [min, max] share of the mean interval (default [0.667, 1.333]: an interval of 300–600 s for a mean of 450);
 //   poisson — optional: no timer, every frame a chance dt * mul(E) / mean (for events whose rate changes all the time, like meteors); mul(E) is optional;
 //   fast    — mean interval in the test mode "fast" (number or function of E, default 7 s);
+//   when    — optional: a short note for the panels when the event happens only at a certain time ("evening", "at night");
 //   lvl     — optional: function returning the level when it is not stored here (meteors follow the ⚙ "Sky" switch).
 // Frequency levels: off / rare / normal / often. The interval is multiplied by 2.5 / 1 / 0.1, "off" means the event never happens.
 // Levels are stored in the browser (forest.events.v1) and in settings.json; "normal" is not stored.
@@ -68,4 +69,13 @@ function updateEvents(dt, E) {
       EV_T[ev.id] = evDraw(ev, evMean(ev, E));
     }
   }
+}
+
+// Text under the name in the panels: how often the event happens at the given level, e.g. "~15 min", "~1.5 h · evening" (E — the result of env(), the gap may depend on the season).
+function evEveryText(id, level, E) {
+  const ev = EVENTS.find(x => x.id === id); if (!ev) return '';
+  if (level === 'off') return 'off';
+  const s = (typeof ev.gap === 'function' ? ev.gap(E) : ev.gap) * EV_MULT[level], m = s / 60, h = m / 60;
+  const t = s < 60 ? Math.round(s) + ' s' : m < 10 ? Math.round(m) + ' min' : m < 90 ? Math.round(m / 5) * 5 + ' min' : (h < 10 ? Math.round(h * 2) / 2 : Math.round(h)) + ' h';
+  return '~' + t + (ev.when ? ' · ' + ev.when : '');
 }
